@@ -89,6 +89,10 @@
 
 <script>
   const LIFF_ID = "2010226382-7KYbDoOC"; 
+  
+  // 🔗 【重要】ここに控えたGASのウェブアプリURLを貼り付けます
+  const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3NF7dnj_aC1Js7ZuYMT66OEPCVPfTzM68-2b-eB4DBI_s0CV5TnmNw3ndukzG_nHr/exec"; 
+
   let masterMembers = [];
   let activeEvents = [];
 
@@ -102,26 +106,36 @@
     }).catch(err => console.error("LIFF初期化失敗", err));
   };
 
-  // GAS側からメンバー一覧と動いているイベント一覧を読み込む
+  // GAS側からデータを安全に読み込む（お引越し完全対応版）
   function fetchInitialData() {
-    google.script.run.withSuccessHandler(function(data) {
-      masterMembers = data.memberList;
-      activeEvents = data.activeEvents;
-      
-      renderMembers();
-      renderEventDropdown();
-      
-      document.getElementById("loading").classList.add("hidden");
-      document.getElementById("app").classList.remove("hidden");
-    }).getInitialData();
+    if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("〜〜")) {
+      alert("HTMLコード内の『GAS_WEB_APP_URL』が未設定です。貼り付けてください。");
+      return;
+    }
+
+    fetch(`${GAS_WEB_APP_URL}?action=getInitialData`)
+      .then(response => response.json())
+      .then(data => {
+        masterMembers = data.memberList;
+        activeEvents = data.activeEvents;
+        
+        renderMembers();
+        renderEventDropdown();
+        
+        document.getElementById("loading").classList.add("hidden");
+        document.getElementById("app").classList.remove("hidden");
+      })
+      .catch(err => {
+        console.error("データ取得失敗", err);
+        alert("データの同期に失敗しました。GASのデプロイ設定やURLを確認してください。");
+      });
   }
 
-  // メンバー一覧のチェックボックスを生成
   function renderMembers() {
     const container = document.getElementById("member_list");
     container.innerHTML = "";
     if(masterMembers.length === 0) {
-      container.innerHTML = "<div class='loading'>メンバーが登録されていません。先にBotとトークしてください。</div>";
+      container.innerHTML = "<div class='loading'>メンバーが登録されていません。</div>";
       return;
     }
     masterMembers.forEach(m => {
@@ -134,7 +148,6 @@
     });
   }
 
-  // 既存イベント用ドロップダウンを生成
   function renderEventDropdown() {
     const select = document.getElementById("select_event");
     activeEvents.forEach(e => {
@@ -145,13 +158,11 @@
     });
   }
 
-  // モード切り替え（新規 / 既存）
   function toggleEventMode() {
     const isNew = document.getElementById("type_new").checked;
     if (isNew) {
       document.getElementById("group_new_event").classList.remove("hidden");
       document.getElementById("group_exist_event").classList.add("hidden");
-      // チェックボックスを全員外す
       document.querySelectorAll(".member-checkbox").forEach(cb => cb.checked = false);
     } else {
       document.getElementById("group_new_event").classList.add("hidden");
@@ -159,29 +170,22 @@
     }
   }
 
-  // 既存イベントを選んだら、前回のメンバーを自動復元・引き継ぎ！
   function onExistingEventSelect() {
     const txId = document.getElementById("select_event").value;
     const found = activeEvents.find(e => e.txId === txId);
     if (!found) return;
-    
-    // 前回参加メンバーの配列
     const pastMembers = found.members.split(",").map(m => m.trim());
-    
-    // チェックボックスの状態を自動連動
     document.querySelectorAll(".member-checkbox").forEach(cb => {
       cb.checked = pastMembers.includes(cb.value);
     });
   }
 
-  // 日時のフォーマット整形 (YYYY/MM/DD HH:mm)
   function formatDateTime(val) {
     if (!val) return "";
     const d = new Date(val);
     return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
-  // フォーム送信
   function submitForm() {
     const mode = document.querySelector('input[name="event_type"]:checked').value;
     let eventName = "";
@@ -204,7 +208,6 @@
     const deadline = formatDateTime(document.getElementById("deadline").value);
     if (!requestStart || !deadline) { alert("請求受付日時と締め切り日時を両方選択してください。"); return; }
 
-    // チェックされたメンバーをカンマ区切りで結合
     const selectedMembers = [];
     document.querySelectorAll(".member-checkbox:checked").forEach(cb => {
       selectedMembers.push(cb.value);
@@ -213,7 +216,6 @@
 
     const payMethod = document.getElementById("pay_method").value;
 
-    // LINEトークルームにメッセージを送信する形式にパッキング
     const textMessage = `【精算申請】\n` +
                         `区分: ${mode}\n` +
                         `既存ID: ${existingTxId}\n` +
