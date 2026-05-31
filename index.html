@@ -2,124 +2,234 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>出費の申請 | プロ仕様</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>出費の精算申請</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; margin: 0; padding: 15px; color: #333; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 15px; }
+    h2 { margin-top: 0; font-size: 18px; color: #111; border-left: 4px solid #06C755; padding-left: 8px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 14px; }
+    input[type="text"], input[type="number"], input[type="datetime-local"], select {
+      width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px;
+    }
+    .radio-group { display: flex; gap: 15px; margin-bottom: 15px; }
+    .radio-label { display: flex; align-items: center; gap: 6px; background: #eee; padding: 10px 15px; border-radius: 8px; cursor: pointer; flex: 1; justify-content: center; font-weight: bold; }
+    input[type="radio"]:checked + .radio-label { background: #06C755; color: white; }
+    input[type="radio"] { display: none; }
+    .member-container { border: 1px solid #ddd; border-radius: 6px; max-height: 180px; overflow-y: auto; padding: 10px; background: #fafafa; }
+    .member-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .member-item:last-child { border-bottom: none; }
+    .member-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+    .btn-submit { background-color: #06C755; color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 8px rgba(6,199,85,0.2); }
+    .btn-submit:active { background-color: #05a647; }
+    .loading { text-align: center; color: #666; font-size: 14px; padding: 20px; }
+    .hidden { display: none; }
+  </style>
 </head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+<body>
 
-  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-    <div class="bg-gradient-to-r" style="background-image: linear-gradient(135deg, #06b6d4 0%, #0db66f 100%);">
-      <div class="p-6 text-center">
-        <h2 class="text-xl font-bold text-white tracking-wide">💸 出費の精算申請</h2>
-        <p class="text-xs text-cyan-100 mt-1">企業クオリティのスマート精算システム</p>
-      </div>
-    </div>
+<div id="loading" class="loading">LINEと同期中...⏳</div>
+
+<div id="app" class="card hidden">
+  <h2>出費の精算申請</h2>
+  
+  <div class="radio-group">
+    <input type="radio" id="type_new" name="event_type" value="新規" checked onchange="toggleEventMode()">
+    <label for="type_new" class="radio-label">🆕 新規イベント</label>
     
-    <form id="expenseForm" class="p-6 space-y-5">
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">イベント名 / フラグ</label>
-        <input type="text" id="eventName" placeholder="例: BBQ_2026/07/17" class="w-full rounded-xl border border-slate-200 p-3 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition" required>
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">支払った金額 (円)</label>
-        <div class="relative">
-          <span class="absolute left-3 top-3 text-slate-400 text-sm font-bold">¥</span>
-          <input type="number" id="amount" placeholder="金額を入力" class="w-full rounded-xl border border-slate-200 p-3 pl-8 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition" required>
-        </div>
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">請求期日</label>
-        <input type="date" id="dueDate" class="w-full rounded-xl border border-slate-200 p-3 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition" required>
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">割り振りメンバー（カンマ区切り）</label>
-        <input type="text" id="members" placeholder="例: 太郎, 次郎, 花子" class="w-full rounded-xl border border-slate-200 p-3 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition" required>
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">希望する受け取り決済（複数選択可）</label>
-        <div class="grid grid-cols-2 gap-2">
-          <label class="border border-slate-200 rounded-xl p-3 flex items-center space-x-2 cursor-pointer hover:bg-slate-50 transition select-none has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
-            <input type="checkbox" name="paymethod" value="PayPay" class="rounded text-red-500 focus:ring-red-500">
-            <span class="text-sm font-bold text-slate-700">🔴 PayPay</span>
-          </label>
-          <label class="border border-slate-200 rounded-xl p-3 flex items-center space-x-2 cursor-pointer hover:bg-slate-50 transition select-none has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
-            <input type="checkbox" name="paymethod" value="ことら送金" class="rounded text-emerald-500 focus:ring-emerald-500">
-            <span class="text-sm font-bold text-slate-700">🟢 ことら送金</span>
-          </label>
-          <label class="border border-slate-200 rounded-xl p-3 flex items-center space-x-2 cursor-pointer hover:bg-slate-50 transition select-none has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
-            <input type="checkbox" name="paymethod" value="銀行振込" class="rounded text-blue-500 focus:ring-blue-500">
-            <span class="text-sm font-bold text-slate-700">🔵 銀行振込</span>
-          </label>
-          <label class="border border-slate-200 rounded-xl p-3 flex items-center space-x-2 cursor-pointer hover:bg-slate-50 transition select-none has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-            <input type="checkbox" name="paymethod" value="現金" class="rounded text-amber-500 focus:ring-amber-500">
-            <span class="text-sm font-bold text-slate-700">🪙 現金手渡し</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="pt-2">
-        <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-md transform active:scale-[0.98] transition duration-150">
-          🚀 申請を送信する
-        </button>
-      </div>
-    </form>
+    <input type="radio" id="type_exist" name="event_type" value="既存" onchange="toggleEventMode()">
+    <label for="type_exist" class="radio-label">📂 既存に追加</label>
   </div>
 
-  <script>
-    // ※あなたのLIFF IDをそのまま引き継いでいます
-    const LIFF_ID = "2010226382-7KYbDoOC"; 
+  <div id="group_new_event" class="form-group">
+    <label for="event_name">イベント名</label>
+    <input type="text" id="event_name" placeholder="例: 夏合宿2026, 打ち上げBBQ">
+  </div>
 
-    async function initLiff() {
-      try {
-        await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) { liff.login(); }
-      } catch (error) { console.error("LIFF初期化失敗", error); }
+  <div id="group_exist_event" class="form-group hidden">
+    <label for="select_event">既存のイベントを選択</label>
+    <select id="select_event" onchange="onExistingEventSelect()">
+      <option value="">-- イベント一覧を選んでください --</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="amount">支払った総額 (円)</label>
+    <input type="number" id="amount" inputmode="numeric" pattern="[0-9]*" placeholder="金額を数字で入力">
+  </div>
+
+  <div class="form-group">
+    <label for="request_start">請求受付開始（自動通知する日時）</label>
+    <input type="datetime-local" id="request_start">
+  </div>
+
+  <div class="form-group">
+    <label for="deadline">請求の締め切り期日</label>
+    <input type="datetime-local" id="deadline">
+  </div>
+
+  <div class="form-group">
+    <label>割り勘対象メンバー</label>
+    <div id="member_list" class="member-container">
+      </div>
+  </div>
+
+  <div class="form-group">
+    <label for="pay_method">希望する回収・受取方法</label>
+    <select id="pay_method">
+      <option value="PayPay">PayPay</option>
+      <option value="現金手渡し">現金手渡し</option>
+      <option value="銀行振込">銀行振込</option>
+    </select>
+  </div>
+
+  <button class="btn-submit" onclick="submitForm()">🚀 申請データを送信する</button>
+</div>
+
+<script>
+  const LIFF_ID = "2010226382-7KYbDoOC"; 
+  let masterMembers = [];
+  let activeEvents = [];
+
+  window.onload = function() {
+    liff.init({ liffId: LIFF_ID }).then(() => {
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      } else {
+        fetchInitialData();
+      }
+    }).catch(err => console.error("LIFF初期化失敗", err));
+  };
+
+  // GAS側からメンバー一覧と動いているイベント一覧を読み込む
+  function fetchInitialData() {
+    google.script.run.withSuccessHandler(function(data) {
+      masterMembers = data.memberList;
+      activeEvents = data.activeEvents;
+      
+      renderMembers();
+      renderEventDropdown();
+      
+      document.getElementById("loading").classList.add("hidden");
+      document.getElementById("app").classList.remove("hidden");
+    }).getInitialData();
+  }
+
+  // メンバー一覧のチェックボックスを生成
+  function renderMembers() {
+    const container = document.getElementById("member_list");
+    container.innerHTML = "";
+    if(masterMembers.length === 0) {
+      container.innerHTML = "<div class='loading'>メンバーが登録されていません。先にBotとトークしてください。</div>";
+      return;
+    }
+    masterMembers.forEach(m => {
+      container.innerHTML += `
+        <div class="member-item">
+          <input type="checkbox" id="mem_${m.userId}" value="${m.displayName}" class="member-checkbox">
+          <label for="mem_${m.userId}">${m.displayName}</label>
+        </div>
+      `;
+    });
+  }
+
+  // 既存イベント用ドロップダウンを生成
+  function renderEventDropdown() {
+    const select = document.getElementById("select_event");
+    activeEvents.forEach(e => {
+      const opt = document.createElement("option");
+      opt.value = e.txId;
+      opt.innerText = e.eventName;
+      select.appendChild(opt);
+    });
+  }
+
+  // モード切り替え（新規 / 既存）
+  function toggleEventMode() {
+    const isNew = document.getElementById("type_new").checked;
+    if (isNew) {
+      document.getElementById("group_new_event").classList.remove("hidden");
+      document.getElementById("group_exist_event").classList.add("hidden");
+      // チェックボックスを全員外す
+      document.querySelectorAll(".member-checkbox").forEach(cb => cb.checked = false);
+    } else {
+      document.getElementById("group_new_event").classList.add("hidden");
+      document.getElementById("group_exist_event").classList.remove("hidden");
+    }
+  }
+
+  // 既存イベントを選んだら、前回のメンバーを自動復元・引き継ぎ！
+  function onExistingEventSelect() {
+    const txId = document.getElementById("select_event").value;
+    const found = activeEvents.find(e => e.txId === txId);
+    if (!found) return;
+    
+    // 前回参加メンバーの配列
+    const pastMembers = found.members.split(",").map(m => m.trim());
+    
+    // チェックボックスの状態を自動連動
+    document.querySelectorAll(".member-checkbox").forEach(cb => {
+      cb.checked = pastMembers.includes(cb.value);
+    });
+  }
+
+  // 日時のフォーマット整形 (YYYY/MM/DD HH:mm)
+  function formatDateTime(val) {
+    if (!val) return "";
+    const d = new Date(val);
+    return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+
+  // フォーム送信
+  function submitForm() {
+    const mode = document.querySelector('input[name="event_type"]:checked').value;
+    let eventName = "";
+    let existingTxId = "";
+
+    if (mode === "新規") {
+      eventName = document.getElementById("event_name").value.trim();
+      if (!eventName) { alert("イベント名を入力してください。"); return; }
+    } else {
+      const select = document.getElementById("select_event");
+      existingTxId = select.value;
+      eventName = select.options[select.selectedIndex].text;
+      if (!existingTxId) { alert("既存のイベントを選択してください。"); return; }
     }
 
-    window.onload = function() { initLiff(); };
+    const amount = document.getElementById("amount").value;
+    if (!amount) { alert("金額を入力してください。"); return; }
 
-    document.getElementById('expenseForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.disabled = true;
-      submitBtn.innerText = "送信中...";
+    const requestStart = formatDateTime(document.getElementById("request_start").value);
+    const deadline = formatDateTime(document.getElementById("deadline").value);
+    if (!requestStart || !deadline) { alert("請求受付日時と締め切り日時を両方選択してください。"); return; }
 
-      const eventName = document.getElementById('eventName').value;
-      const amount = document.getElementById('amount').value;
-      const dueDate = document.getElementById('dueDate').value;
-      const members = document.getElementById('members').value;
-
-      // 選択された決済方法を回収する処理
-      const checkedBoxes = document.querySelectorAll('input[name="paymethod"]:checked');
-      const methods = Array.from(checkedBoxes).map(cb => cb.value);
-      const methodsText = methods.length > 0 ? methods.join(', ') : '指定なし';
-
-      const formattedDate = dueDate.replace(/-/g, '/');
-
-      // メッセージに決済方法も自動で追加されるように進化！
-      const messageText = `【精算申請】\nイベント: ${eventName}\n金額: ${amount}円\n期日: ${formattedDate}\nメンバー: ${members}\n受取方法: ${methodsText}`;
-
-      try {
-        // スマホのトーク内ならそのまま送信
-        await liff.sendMessages([{
-          type: 'text',
-          text: messageText
-        }]);
-        liff.closeWindow();
-      } catch (error) {
-        // PCブラウザや外部ブラウザで送れなかったときのエラーメッセージをスマートに
-        alert("【確認】PCブラウザ、またはトーク外から開かれているためLINEへの自動投稿をスキップしました（画面の引っ越しは成功しています！）。データをスプレッドシートへ直接送る「裏方API連携」へ進みましょう！");
-        submitBtn.disabled = false;
-        submitBtn.innerText = "🚀 申請を送信する";
-      }
+    // チェックされたメンバーをカンマ区切りで結合
+    const selectedMembers = [];
+    document.querySelectorAll(".member-checkbox:checked").forEach(cb => {
+      selectedMembers.push(cb.value);
     });
-  </script>
+    if (selectedMembers.length === 0) { alert("メンバーを1人以上選択してください。"); return; }
+
+    const payMethod = document.getElementById("pay_method").value;
+
+    // LINEトークルームにメッセージを送信する形式にパッキング
+    const textMessage = `【精算申請】\n` +
+                        `区分: ${mode}\n` +
+                        `既存ID: ${existingTxId}\n` +
+                        `イベント: ${eventName}\n` +
+                        `金額: ${amount}円\n` +
+                        `請求受付: ${requestStart}\n` +
+                        `請求締切: ${deadline}\n` +
+                        `メンバー: ${selectedMembers.join(", ")}\n` +
+                        `受取方法: ${payMethod}`;
+
+    liff.sendMessages([{ type: 'text', text: textMessage }]).then(() => {
+      liff.closeWindow();
+    }).catch(err => {
+      alert("送信に失敗しました: " + err);
+    });
+  }
+</script>
 </body>
 </html>
