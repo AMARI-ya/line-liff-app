@@ -7,43 +7,41 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; min-height: 100vh; display: flex; flex-direction: column; }
-    .card { background: white; padding: 20px; box-sizing: border-box; flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
-    h2 { margin-top: 0; font-size: 19px; color: #111; border-left: 5px solid #06C755; padding-left: 10px; margin-bottom: 20px; }
-    .form-group { margin-bottom: 16px; }
-    label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: #444; }
+    .card { background: white; padding: 24px 20px; box-sizing: border-box; flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
+    h2 { margin-top: 0; font-size: 19px; color: #111; border-left: 5px solid #06C755; padding-left: 10px; margin-bottom: 24px; }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; color: #444; }
     
-    /* 入力枠のスタイル改善 */
-    input[type="text"], input[type="number"], select {
-      width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; background-color: #fafafa;
-    }
-    /* 📅 スマホで崩れやすい日時入力枠をコンパクトに調整 */
-    input[type="datetime-local"] {
-      width: 100%; padding: 10px 8px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 14px; background-color: #fafafa; letter-spacing: -0.5px;
+    /* 🎨 すべての入力枠（日付含む）のサイズとデザインを完全に統一 */
+    input[type="text"], input[type="number"], input[type="datetime-local"], select {
+      width: 100%; height: 48px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: #fafafa; transition: border 0.2s; -webkit-appearance: none;
     }
     input:focus, select:focus { border-color: #06C755; outline: none; background-color: #fff; }
     
     .radio-group { display: flex; gap: 10px; margin-bottom: 20px; }
-    .radio-label { display: flex; align-items: center; gap: 6px; background: #f0f0f0; padding: 10px; border-radius: 8px; cursor: pointer; flex: 1; justify-content: center; font-weight: bold; font-size: 14px; color: #555; }
-    input[type="radio"]:checked + .radio-label { background: #06C755; color: white; box-shadow: 0 3px 6px rgba(6,199,85,0.2); }
+    .radio-label { display: flex; align-items: center; gap: 6px; background: #f0f0f0; padding: 12px; border-radius: 8px; cursor: pointer; flex: 1; justify-content: center; font-weight: bold; font-size: 14px; color: #555; }
+    input[type="radio"]:checked + .radio-label { background: #06C755; color: white; }
     input[type="radio"] { display: none; }
     
-    .checkbox-container { border: 1px solid #e0e0e0; border-radius: 8px; max-height: 160px; overflow-y: auto; padding: 4px 12px; background: #fafafa; }
-    .check-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 15px; }
-    .check-item:last-child { border-bottom: none; }
-    .check-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #06C755; }
+    .btn-submit { background-color: #06C755; color: white; border: none; width: 100%; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(6,199,85,0.2); }
     
-    .btn-submit { background-color: #06C755; color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(6,199,85,0.2); }
-    
-    /* 🏦 銀行口座入力用の専用スタイリッシュ枠 */
     .bank-box { margin-top: 10px; padding: 14px; background: #eef3fc; border-radius: 8px; border-left: 4px solid #007aff; }
     .bank-row { display: flex; gap: 8px; margin-bottom: 8px; }
-    .bank-row input, .bank-row select { padding: 8px; font-size: 14px; background: #fff; }
+    .bank-row input, .bank-row select { height: 40px; padding: 8px; font-size: 14px; background: #fff; }
+
+    /* 🌟 ホットペッパー風：申請完了画面のスタイリング */
+    .success-container { text-align: center; padding: 40px 20px; background: white; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .success-icon { font-size: 48px; color: #06C755; margin-bottom: 16px; }
+    .success-title { font-size: 22px; font-weight: bold; margin-bottom: 8px; color: #111; }
+    .success-text { font-size: 14px; color: #666; margin-bottom: 30px; line-height: 1.6; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: #f8f9fa; border-radius: 8px; overflow: hidden; font-size: 14px; }
+    .info-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+    .info-table td.label-td { font-weight: bold; color: #555; width: 35%; }
+    .btn-calendar { background-color: #4285F4; color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; box-sizing: border-box; box-shadow: 0 3px 6px rgba(66,133,244,0.2); }
 
     /* スケルトンローディング */
     .skeleton-screen { padding: 20px; background: white; min-height: 100vh; box-sizing: border-box; }
     .skeleton-line { height: 18px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; margin-bottom: 12px; border-radius: 4px; }
-    .skeleton-title { height: 26px; width: 60%; margin-bottom: 25px; }
-    .skeleton-btn { height: 48px; margin-top: 40px; border-radius: 10px; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     .hidden { display: none !important; }
   </style>
@@ -51,13 +49,9 @@
 <body>
 
 <div id="skeleton" class="skeleton-screen">
-  <div class="skeleton-line skeleton-title"></div>
-  <div class="skeleton-line" style="width: 100%; height: 40px; border-radius: 8px; margin-bottom: 20px;"></div>
-  <div class="skeleton-line" style="width: 40%;"></div>
-  <div class="skeleton-line" style="height: 40px; border-radius: 8px; margin-bottom: 20px;"></div>
-  <div class="skeleton-line" style="width: 50%;"></div>
-  <div class="skeleton-line" style="height: 100px; border-radius: 8px;"></div>
-  <div class="skeleton-line skeleton-btn"></div>
+  <div class="skeleton-line" style="width: 60%; height: 26px; margin-bottom: 25px;"></div>
+  <div class="skeleton-line" style="width: 100%; height: 48px; border-radius: 8px; margin-bottom: 20px;"></div>
+  <div class="skeleton-line" style="width: 40px; height: 48px; border-radius: 8px;"></div>
 </div>
 
 <div id="app" class="card hidden">
@@ -66,7 +60,6 @@
   <div class="radio-group">
     <input type="radio" id="type_new" name="event_type" value="新規" checked onchange="toggleEventMode()">
     <label for="type_new" class="radio-label">🆕 新規イベント</label>
-    
     <input type="radio" id="type_exist" name="event_type" value="既存" onchange="toggleEventMode()">
     <label for="type_exist" class="radio-label">📂 既存に追加</label>
   </div>
@@ -78,8 +71,8 @@
 
   <div id="group_exist_event" class="form-group hidden">
     <label for="select_event">既存のイベントを選択</label>
-    <select id="select_event" onchange="onExistingEventSelect()">
-      <option value="">-- イベント一覧を選んでください --</option>
+    <select id="select_event">
+      <option value="">-- イベントを選んでください --</option>
     </select>
   </div>
 
@@ -89,7 +82,7 @@
   </div>
 
   <div class="form-group">
-    <label for="request_start">請求受付開始（自動通知する日時）</label>
+    <label for="request_start">請求受付開始（自動通知日時）</label>
     <input type="datetime-local" id="request_start">
   </div>
 
@@ -99,141 +92,83 @@
   </div>
 
   <div class="form-group">
-    <label>割り勘対象メンバー</label>
-    <div id="member_list" class="checkbox-container">
-      </div>
-  </div>
-
-  <div class="form-group">
-    <label>希望する回収・受取方法（複数選択可）</label>
-    <div class="checkbox-container">
-      <div class="check-item">
-        <input type="checkbox" name="pay_method" id="pay_paypay" value="PayPay" checked>
-        <label for="pay_paypay">PayPay（デフォルト）</label>
-      </div>
-      <div class="check-item">
-        <input type="checkbox" name="pay_method" id="pay_cash" value="現金手渡し">
-        <label for="pay_cash">現金手渡し</label>
-      </div>
-      <div class="check-item">
-        <input type="checkbox" name="pay_method" id="pay_bank" value="銀行振込" onchange="toggleBankInput()">
-        <label for="pay_bank">銀行振込</label>
-      </div>
-    </div>
+    <label>希望する回収・受取方法</label>
+    <select id="pay_method_main" onchange="toggleBankInput()">
+      <option value="PayPay">PayPay（デフォルト）</option>
+      <option value="現金手渡し">現金手渡し</option>
+      <option value="銀行振込">銀行振込</option>
+    </select>
     
     <div id="group_bank_info" class="bank-box hidden">
-      <label style="font-size: 13px; color: #111; margin-bottom: 6px;">🏦 振込先口座情報の入力</label>
       <div class="bank-row">
-        <input type="text" id="bank_name" placeholder="銀行名 (例: みずほ)" style="flex: 1.2;">
-        <input type="text" id="bank_branch" placeholder="支店名 (例: 新宿)" style="flex: 1;">
+        <input type="text" id="bank_name" placeholder="銀行名" style="flex: 1.2;">
+        <input type="text" id="bank_branch" placeholder="支店名" style="flex: 1;">
       </div>
       <div class="bank-row">
-        <select id="bank_type" style="flex: 0.8; height: 39px; padding: 4px 8px;">
+        <select id="bank_type" style="flex: 0.8;">
           <option value="普通">普通</option>
           <option value="当座">当座</option>
         </select>
-        <input type="number" id="bank_account" inputmode="numeric" pattern="[0-9]*" placeholder="口座番号 (7桁)" style="flex: 1.5;">
+        <input type="number" id="bank_account" inputmode="numeric" pattern="[0-9]*" placeholder="口座番号" style="flex: 1.5;">
       </div>
     </div>
   </div>
 
-  <button class="btn-submit" onclick="submitForm()">🚀 申請データを送信する</button>
+  <button class="btn-submit" onclick="submitForm()">🚀 メンバーを選んで申請する</button>
+</div>
+
+<div id="success_page" class="success-container hidden">
+  <div class="success-icon">✓</div>
+  <div class="success-title">申請を確定しました！</div>
+  <div class="success-text">LINEで選択したメンバーへ<br>招待状メッセージを送信しました。</div>
+  
+  <table class="info-table">
+    <tr><td class="label-td">イベント</td><td id="res_event">-</td></tr>
+    <tr><td class="label-td">総支払額</td><td id="res_amount">-</td></tr>
+    <tr><td class="label-td">受付期間</td><td id="res_period">-</td></tr>
+  </table>
+
+  <a id="btn_gcal" href="#" target="_blank" class="btn-calendar">📅 Googleカレンダーに追加</a>
 </div>
 
 <script>
   const LIFF_ID = "2010226382-7KYbDoOC"; 
   const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3NF7dnj_aC1Js7ZuYMT66OEPCVPfTzM68-2b-eB4DBI_s0CV5TnmNw3ndukzG_nHr/exec"; 
 
-  let masterMembers = [];
   let activeEvents = [];
+  let currentUserName = "申請者";
 
   window.onload = function() {
     liff.init({ liffId: LIFF_ID }).then(() => {
-      if (!liff.isLoggedIn()) {
-        liff.login();
-      } else {
-        fetchInitialData();
-      }
-    }).catch(err => console.error("LIFF初期化失敗", err));
+      if (!liff.isLoggedIn()) { liff.login(); } else { fetchInitialData(); }
+    }).catch(err => console.error(err));
   };
 
   function fetchInitialData() {
-    if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("〜〜")) {
-      alert("HTMLコード内の『GAS_WEB_APP_URL』が未設定です。貼り付けてください。");
-      return;
-    }
+    liff.getProfile().then(prof => { currentUserName = prof.displayName; });
     fetch(`${GAS_WEB_APP_URL}?action=getInitialData`)
-      .then(response => response.json())
+      .then(res => res.json())
       .then(data => {
-        masterMembers = data.memberList;
         activeEvents = data.activeEvents;
-        renderMembers();
-        renderEventDropdown();
+        const select = document.getElementById("select_event");
+        activeEvents.forEach(e => {
+          const opt = document.createElement("option");
+          opt.value = e.txId; opt.innerText = e.eventName; select.appendChild(opt);
+        });
         document.getElementById("skeleton").classList.add("hidden");
         document.getElementById("app").classList.remove("hidden");
-      })
-      .catch(err => {
-        console.error("データ取得失敗", err);
-        alert("データの同期に失敗しました。");
-      });
-  }
-
-  function renderMembers() {
-    const container = document.getElementById("member_list");
-    container.innerHTML = "";
-    if(masterMembers.length === 0) {
-      container.innerHTML = "<div style='text-align:center;color:#888;padding:10px;font-size:13px;'>表示対象のメンバーがいません。<br>スプレッドシートの「ユーザー一覧」のG列に『ON』と入力してください。</div>";
-      return;
-    }
-    masterMembers.forEach(m => {
-      container.innerHTML += `
-        <div class="check-item">
-          <input type="checkbox" id="mem_${m.userId || m.displayName}" value="${m.displayName}" class="member-checkbox">
-          <label for="mem_${m.userId || m.displayName}">${m.displayName}</label>
-        </div>
-      `;
-    });
-  }
-
-  function renderEventDropdown() {
-    const select = document.getElementById("select_event");
-    activeEvents.forEach(e => {
-      const opt = document.createElement("option");
-      opt.value = e.txId;
-      opt.innerText = e.eventName;
-      select.appendChild(opt);
-    });
+      }).catch(err => alert("同期失敗"));
   }
 
   function toggleEventMode() {
     const isNew = document.getElementById("type_new").checked;
-    if (isNew) {
-      document.getElementById("group_new_event").classList.remove("hidden");
-      document.getElementById("group_exist_event").classList.add("hidden");
-      document.querySelectorAll(".member-checkbox").forEach(cb => cb.checked = false);
-    } else {
-      document.getElementById("group_new_event").classList.add("hidden");
-      document.getElementById("group_exist_event").classList.remove("hidden");
-    }
-  }
-
-  function onExistingEventSelect() {
-    const txId = document.getElementById("select_event").value;
-    const found = activeEvents.find(e => e.txId === txId);
-    if (!found) return;
-    const pastMembers = found.members.split(",").map(m => m.trim());
-    document.querySelectorAll(".member-checkbox").forEach(cb => {
-      cb.checked = pastMembers.includes(cb.value);
-    });
+    document.getElementById("group_new_event").classList.toggle("hidden", !isNew);
+    document.getElementById("group_exist_event").classList.toggle("hidden", isNew);
   }
 
   function toggleBankInput() {
-    const isBankChecked = document.getElementById("pay_bank").checked;
-    if (isBankChecked) {
-      document.getElementById("group_bank_info").classList.remove("hidden");
-    } else {
-      document.getElementById("group_bank_info").classList.add("hidden");
-    }
+    const isBank = document.getElementById("pay_method_main").value === "銀行振込";
+    document.getElementById("group_bank_info").classList.toggle("hidden", !isBank);
   }
 
   function formatDateTime(val) {
@@ -242,71 +177,63 @@
     return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
+  function generateGoogleCalendarUrl(title, startIso, endIso) {
+    const sStr = startIso.replace(/[-:]/g, '') + '00Z';
+    const eStr = endIso.replace(/[-:]/g, '') + '00Z';
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${sStr}/${eStr}&details=${encodeURIComponent('精算受付締め切り期日です。アプリからご対応をお願いします。')}`;
+  }
+
   function submitForm() {
     const mode = document.querySelector('input[name="event_type"]:checked').value;
-    let eventName = "";
-    let existingTxId = "";
-
-    if (mode === "新規") {
-      eventName = document.getElementById("event_name").value.trim();
-      if (!eventName) { alert("イベント名を入力してください。"); return; }
-    } else {
-      const select = document.getElementById("select_event");
-      existingTxId = select.value;
-      eventName = select.options[select.selectedIndex].text;
-      if (!existingTxId) { alert("既存のイベントを選択してください。"); return; }
-    }
-
+    let eventName = mode === "新規" ? document.getElementById("event_name").value.trim() : document.getElementById("select_event").options[document.getElementById("select_event").selectedIndex].text;
     const amount = document.getElementById("amount").value;
-    if (!amount) { alert("金額を入力してください。"); return; }
+    const reqStartRaw = document.getElementById("request_start").value;
+    const deadlineRaw = document.getElementById("deadline").value;
 
-    const requestStart = formatDateTime(document.getElementById("request_start").value);
-    const deadline = formatDateTime(document.getElementById("deadline").value);
-    if (!requestStart || !deadline) { alert("請求受付日時と締め切り日時を両方選択してください。"); return; }
+    if (!eventName || !amount || !reqStartRaw || !deadlineRaw) { alert("未入力の項目があります。"); return; }
 
-    const selectedMembers = [];
-    document.querySelectorAll(".member-checkbox:checked").forEach(cb => {
-      selectedMembers.push(cb.value);
-    });
-    if (selectedMembers.length === 0) { alert("メンバーを1人以上選択してください。"); return; }
-
-    const selectedMethods = [];
-    document.querySelectorAll('input[name="pay_method"]:checked').forEach(cb => {
-      selectedMethods.push(cb.value);
-    });
-    if (selectedMethods.length === 0) { alert("受取方法を1つ以上選択してください。"); return; }
-    
-    let payMethodText = selectedMethods.join(", ");
-    
-    // 🏦 自動結合：個別フォームの値を一つの決まった書式にまとめる
-    if (document.getElementById("pay_bank").checked) {
-      const bName = document.getElementById("bank_name").value.trim();
-      const bBranch = document.getElementById("bank_branch").value.trim();
-      const bType = document.getElementById("bank_type").value;
-      const bAccount = document.getElementById("bank_account").value.trim();
-      
-      if (!bName || !bBranch || !bAccount) {
-        alert("銀行振込を選択した場合は、銀行名・支店名・口座番号をすべて入力してください。");
-        return;
+    // 🌟 1. ［メンバーを選んで申請する］を押すとTarget Pickerが起動！
+    liff.shareTargetPicker([
+      {
+        type: "flex",
+        altText: `【招待】${eventName}の精算グループ`,
+        contents: {
+          type: "bubble",
+          body: {
+            type: "box",
+            layout: "vertical",
+            contents: [
+              { type: "text", text: "📢 精算グループへの招待", weight: "bold", size: "lg", color: "#06C755" },
+              { type: "text", text: `イベント: ${eventName}`, size: "md", margin: "md", weight: "bold" },
+              { type: "text", text: `申請者: ${currentUserName}`, size: "sm", color: "#666666" },
+              { type: "text", text: "この割り勘イベントに参加しますか？", size: "sm", margin: "lg", wrap: true }
+            ]
+          },
+          footer: {
+            type: "box",
+            layout: "horizontal",
+            spacing: "sm",
+            contents: [
+              { type: "button", style: "primary", color: "#06C755", action: { type: "uri", label: "⭕ はい (参加)", uri: "https://liff.line.me/今後の参加用LIFF_ID" } },
+              { type: "button", style: "secondary", action: { type: "uri", label: "❌ いいえ", uri: "https://liff.line.me/今後の参加用LIFF_ID?status=no" } }
+            ]
+          }
+        }
       }
-      payMethodText += ` (${bName}銀行 ${bBranch}支店 ${bType} ${bAccount})`;
-    }
+    ]).then((res) => {
+      if (res) {
+        // 🌟 2. 送信が成功したら、画面がホットペッパー風の完了画面に切り替わる！
+        document.getElementById("res_event").innerText = eventName;
+        document.getElementById("res_amount").innerText = Number(amount).toLocaleString() + "円";
+        document.getElementById("res_period").innerText = `${formatDateTime(reqStartRaw)} 〜 ${formatDateTime(deadlineRaw)}`;
+        
+        // GoogleカレンダーURL生成
+        document.getElementById("btn_gcal").href = generateGoogleCalendarUrl(`【精算期日】${eventName}`, reqStartRaw, deadlineRaw);
 
-    const textMessage = `【精算申請】\n` +
-                        `区分: ${mode}\n` +
-                        `既存ID: ${existingTxId}\n` +
-                        `イベント: ${eventName}\n` +
-                        `金額: ${amount}円\n` +
-                        `請求受付: ${requestStart}\n` +
-                        `請求締切: ${deadline}\n` +
-                        `メンバー: ${selectedMembers.join(", ")}\n` +
-                        `受取方法: ${payMethodText}`;
-
-    liff.sendMessages([{ type: 'text', text: textMessage }]).then(() => {
-      liff.closeWindow();
-    }).catch(err => {
-      alert("送信に失敗しました: " + err);
-    });
+        document.getElementById("app").classList.add("hidden");
+        document.getElementById("success_page").classList.remove("hidden");
+      }
+    }).catch(err => alert("送信がキャンセルされました"));
   }
 </script>
 </body>
