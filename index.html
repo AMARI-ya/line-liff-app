@@ -3,57 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>出費の精算申請</title>
+  <title>自動割り勘精算</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; min-height: 100vh; display: flex; flex-direction: column; }
     .card { background: white; padding: 24px 20px; box-sizing: border-box; flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
-    h2 { margin-top: 0; font-size: 19px; color: #111; border-left: 5px solid #06C755; padding-left: 10px; margin-bottom: 24px; }
+    h2 { margin-top: 0; font-size: 19px; color: #111; border-left: 5px solid #06C755; padding-left: 10px; margin-bottom: 20px; }
+    h3 { font-size: 14px; color: #666; margin: 15px 0 8px 0; }
     .form-group { margin-bottom: 18px; }
     label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; color: #444; }
     
     input[type="text"], input[type="number"], input[type="datetime-local"], select {
-      width: 100%; height: 48px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: #fafafa; transition: border 0.2s; -webkit-appearance: none;
-    }
-    input:focus, select:focus { border-color: #06C755; outline: none; background-color: #fff; }
+      width: 100%; height: 48px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: #fafafa; }
     
     .radio-group { display: flex; gap: 10px; margin-bottom: 20px; }
     .radio-label { display: flex; align-items: center; gap: 6px; background: #f0f0f0; padding: 12px; border-radius: 8px; cursor: pointer; flex: 1; justify-content: center; font-weight: bold; font-size: 14px; color: #555; }
     input[type="radio"]:checked + .radio-label { background: #06C755; color: white; }
     input[type="radio"] { display: none; }
     
-    .btn-submit { background-color: #06C755; color: white; border: none; width: 100%; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(6,199,85,0.2); }
+    .btn-submit { background-color: #06C755; color: white; border: none; width: 100%; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 12px rgba(6,199,85,0.2); }
     .btn-decline { background-color: #888; color: white; border: none; width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-    
+    .btn-back { background: none; border: 1px solid #ccc; color: #666; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; margin-bottom: 15px; align-self: flex-start; }
+
+    /* 📊 マイページ用リストスタイル */
+    .event-list-container { display: flex; flex-direction: column; gap: 10px; }
+    .event-item-card { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; font-size: 14px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+    .event-item-title { font-weight: bold; font-size: 15px; color: #111; margin-bottom: 4px; padding-right: 80px; }
+    .event-item-meta { color: #718096; font-size: 12px; margin-bottom: 2px; }
+    .event-item-price { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 16px; color: #df382c; text-align: right; line-height: 1.2; }
+
     .bank-box { margin-top: 10px; padding: 14px; background: #eef3fc; border-radius: 8px; border-left: 4px solid #007aff; }
     .bank-row { display: flex; gap: 8px; margin-bottom: 8px; }
     .bank-row input, .bank-row select { height: 40px; padding: 8px; font-size: 14px; background: #fff; }
 
-    /* 📄 各種案内・完了コンテナ */
     .success-container { text-align: center; padding: 40px 20px; background: white; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .success-icon { font-size: 48px; color: #06C755; margin-bottom: 16px; }
     .success-title { font-size: 22px; font-weight: bold; margin-bottom: 8px; color: #111; }
-    .success-text { font-size: 14px; color: #666; margin-bottom: 30px; line-height: 1.6; }
+    .success-text { font-size: 14px; color: #666; margin-bottom: 25px; line-height: 1.6; }
     
-    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: #f8f9fa; border-radius: 8px; overflow: hidden; font-size: 14px; }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; background: #f8f9fa; border-radius: 8px; overflow: hidden; font-size: 14px; }
     .info-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
     .info-table td.label-td { font-weight: bold; color: #555; width: 35%; }
     
     .calc-box { width: 100%; background: #fff3cd; border: 1px solid #ffeeba; padding: 16px; border-radius: 8px; margin-bottom: 25px; box-sizing: border-box; text-align: left; }
-    .calc-title { font-weight: bold; color: #856404; font-size: 14px; margin-bottom: 6px; }
     .calc-price { font-size: 24px; font-weight: bold; color: #df382c; }
-
     .btn-calendar-trigger { background-color: #4285F4; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; box-shadow: 0 3px 6px rgba(66,133,244,0.2); }
-    .btn-folder { background-color: #007aff; color: white; text-decoration: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 15px; font-weight: bold; text-align: center; display: block; box-sizing: border-box; margin-top: 15px; }
+    .no-data { text-align: center; color: #a0aec0; font-size: 13px; padding: 20px; background: #fafafa; border-radius: 8px; border: 1px dashed #cbd5e0; }
 
-    /* モーダルポップアップ */
+    /* モーダル */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .modal-box { background: white; padding: 24px; border-radius: 12px; width: 85%; max-width: 320px; text-align: center; }
-    .modal-title { font-size: 16px; font-weight: bold; margin-bottom: 16px; color: #111; }
     .modal-btn { display: block; width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: none; font-size: 14px; font-weight: bold; cursor: pointer; text-decoration: none; box-sizing: border-box; }
     .btn-google { background: #de4b39; color: white; }
     .btn-apple { background: #111; color: white; }
-    .btn-close { background: #eee; color: #444; margin-bottom: 0; margin-top: 10px; }
+    .btn-close { background: #eee; color: #444; margin-top: 10px; }
 
     /* スケルトン */
     .skeleton-screen { padding: 20px; background: white; min-height: 100vh; box-sizing: border-box; }
@@ -66,11 +69,25 @@
 
 <div id="skeleton" class="skeleton-screen">
   <div class="skeleton-line" style="width: 60%; height: 26px; margin-bottom: 25px;"></div>
-  <div class="skeleton-line" style="width: 100%; height: 48px; border-radius: 8px; margin-bottom: 20px;"></div>
-  <div class="skeleton-line" style="width: 100%; height: 48px; border-radius: 8px;"></div>
+  <div class="skeleton-line" style="width: 100%; height: 48px; margin-bottom: 20px;"></div>
+  <div class="skeleton-line" style="width: 100%; height: 48px;"></div>
+</div>
+
+<div id="mypage_screen" class="card hidden">
+  <h2>📊 精算マイページ</h2>
+  <div style="font-size:14px; margin-bottom:20px; color:#4a5568;">こんにちは、<span id="mypage_user_name" style="font-weight:bold; color:#1a202c;">-</span> さん</div>
+  
+  <h3>👑 あなたが主催（回収中）</h3>
+  <div id="hosting_list" class="event-list-container"></div>
+
+  <h3>👥 あなたが参加中（精算待ち）</h3>
+  <div id="joining_list" class="event-list-container"></div>
+
+  <button class="btn-submit" style="margin-top:35px; background-color:#007aff; box-shadow: 0 4px 12px rgba(0,122,255,0.2);" onclick="showInputForm()">➕ 新しく出費を精算申請する</button>
 </div>
 
 <div id="app" class="card hidden">
+  <button class="btn-back" onclick="backToMyPage()">🔙 マイページに戻る</button>
   <h2>出費の精算申請</h2>
   <div class="radio-group">
     <input type="radio" id="type_new" name="event_type" value="新規" checked onchange="toggleEventMode()">
@@ -80,11 +97,11 @@
   </div>
   <div id="group_new_event" class="form-group">
     <label for="event_name">イベント名</label>
-    <input type="text" id="event_name" placeholder="例: 打ち上げBBQ">
+    <input type="text" id="event_name" placeholder="例: 夏合宿2026, 打ち上げBBQ">
   </div>
   <div id="group_exist_event" class="form-group hidden">
     <label for="select_event">既存のイベントを選択</label>
-    <select id="select_event"><option value="">-- イベントを選んでください --</option></select>
+    <select id="select_event"></select>
   </div>
   <div class="form-group">
     <label for="amount">支払った総額 (円)</label>
@@ -129,25 +146,24 @@
     <tr><td class="label-td">受付期間</td><td id="res_period">-</td></tr>
   </table>
   <button class="btn-calendar-trigger" onclick="openCalendarModal()">📅 カレンダーに追加する</button>
+  <button class="btn-submit" style="background-color:#007aff;" onclick="location.reload()">📊 マイページへ戻る</button>
 </div>
 
 <div id="member_join_page" class="card hidden">
-  <h2 id="join_title">イベント精算への招待</h2>
+  <h2>イベント精算への招待</h2>
   <div class="success-text" style="text-align: left; margin-bottom: 20px;">
-    <span id="join_creator" style="font-weight: bold; color: #111;">-</span> さんから、以下の割り勘・精算グループへの参加に誘われました。
+    <span id="join_creator" style="font-weight: bold; color: #111;">-</span> さんから、以下の精算グループへの参加に誘われました。
   </div>
   <table class="info-table" style="margin-bottom: 15px;">
     <tr><td class="label-td">イベント名</td><td id="join_event_name">-</td></tr>
     <tr><td class="label-td">総支払額</td><td id="join_amount">-</td></tr>
     <tr><td class="label-td">精算締切</td><td id="join_deadline">-</td></tr>
   </table>
-  
   <div class="calc-box">
-    <div class="calc-title">現在の参加人数での、あなたの予想相殺額：</div>
+    <div style="font-weight:bold; color:#856404; font-size:13px; margin-bottom:4px;">現在のあなたの予想相殺額：</div>
     <div id="join_sim_price" class="calc-price">計算中...</div>
-    <div style="font-size: 11px; color: #666; margin-top: 4px;">※参加人数（はいの人数）が増えるほど、1人あたりの負担額は自動で安くなります。</div>
+    <div style="font-size: 11px; color: #777; margin-top: 4px;">※参加メンバーが増えるほど、1人あたりの負担額は自動で安くなります。</div>
   </div>
-
   <button class="btn-submit" onclick="processMemberResponse('join')">⭕ 参加する（グループに加わる）</button>
   <button class="btn-decline" onclick="processMemberResponse('decline')">❌ 今回はいいえ（辞退する）</button>
 </div>
@@ -155,21 +171,21 @@
 <div id="member_success_page" class="success-container hidden">
   <div class="success-icon" style="color: #007aff;">✓</div>
   <div class="success-title">参加を確定しました！</div>
-  <div class="success-text">グループの割り勘分母に追加されました。<br>現在の確定内容は以下の通りです。</div>
+  <div class="success-text">グループの割り勘分母に追加されました。</div>
   <table class="info-table" style="margin-bottom: 20px;">
     <tr><td class="label-td">イベント</td><td id="m_res_event">-</td></tr>
     <tr><td class="label-td">現在の人数</td><td id="m_res_count">-</td></tr>
-    <tr><td class="label-td">あなたの現在の相殺額</td><td id="m_res_price" style="font-weight: bold; color: #df382c;">-</td></tr>
+    <tr><td class="label-td">現在の相殺額</td><td id="m_res_price" style="font-weight: bold; color: #df382c;">-</td></tr>
   </table>
   <button class="btn-calendar-trigger" onclick="openCalendarModal()">📅 カレンダーに期日を追加</button>
-  <a href="#" class="btn-folder">📂 レシート・思い出フォルダを開く</a>
+  <button class="btn-submit" style="background-color:#007aff;" onclick="location.reload()">📊 マイページへ戻る</button>
 </div>
 
 <div id="calendar_modal" class="modal-overlay hidden">
   <div class="modal-box">
-    <div class="modal-title">お使いのカレンダーを選択</div>
+    <div style="font-size:16px; font-weight:bold; margin-bottom:16px;">お使いのカレンダーを選択</div>
     <a id="modal_gcal" href="#" target="_blank" class="modal-btn btn-google" onclick="closeCalendarModal()">Google カレンダー</a>
-    <button class="modal-btn btn-apple" onclick="downloadIcsFile()">iPhone / 標準カレンダー</button>
+    <button class="modal-btn btn-apple" onclick="openIphoneCalendar()">iPhone / 標準カレンダー</button>
     <button class="modal-btn btn-close" onclick="closeCalendarModal()">キャンセル</button>
   </div>
 </div>
@@ -178,14 +194,12 @@
   const LIFF_ID = "2010226382-7KYbDoOC"; 
   const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3NF7dnj_aC1Js7ZuYMT66OEPCVPfTzM68-2b-eB4DBI_s0CV5TnmNw3ndukzG_nHr/exec"; 
 
-  let activeEvents = [];
-  let currentUserName = "メンバー";
+  let currentUserName = "ゲスト";
   let gEventData = {}; 
   let paramTxId = null;
   let paramAction = null;
 
   window.onload = function() {
-    // URLのパラメータを解析（?action=join&txId=... など）
     const urlParams = new URLSearchParams(window.location.search);
     paramAction = urlParams.get('action');
     paramTxId = urlParams.get('txId');
@@ -196,34 +210,53 @@
   };
 
   function routeScreen() {
-    liff.getProfile().then(prof => { currentUserName = prof.displayName; });
-
-    // 🌟 パラメータに action=join があればメンバー用画面へ直接ジャンプ！
-    if (paramAction === 'join' && paramTxId) {
-      loadMemberJoinPage(paramTxId);
-    } else {
-      // 通常アクセスは管理者用入力画面へ
-      fetchInitialData();
-    }
+    liff.getProfile().then(prof => { 
+      currentUserName = prof.displayName;
+      if (paramAction === 'join' && paramTxId) { loadMemberJoinPage(paramTxId); } else { loadMyPage(); }
+    }).catch(() => {
+      if (paramAction === 'join' && paramTxId) { loadMemberJoinPage(paramTxId); } else { loadMyPage(); }
+    });
   }
 
-  // 管理者：初期データロード
-  function fetchInitialData() {
-    fetch(`${GAS_WEB_APP_URL}?action=getInitialData`)
+  // 🌟 【マイページ機能】自分が主催・参加しているイベントをリアルタイム描画
+  function loadMyPage() {
+    document.getElementById("mypage_user_name").innerText = currentUserName;
+    fetch(`${GAS_WEB_APP_URL}?action=getMyEvents&userName=${encodeURIComponent(currentUserName)}`)
       .then(res => res.json())
       .then(data => {
-        activeEvents = data.activeEvents || [];
-        const select = document.getElementById("select_event");
-        activeEvents.forEach(e => {
-          const opt = document.createElement("option");
-          opt.value = e.txId; opt.innerText = e.eventName; select.appendChild(opt);
-        });
-        document.getElementById("skeleton").classList.add("hidden");
-        document.getElementById("app").classList.remove("hidden");
-      }).catch(err => alert("初期同期失敗"));
+        if (data.status === 'success') {
+          const hList = document.getElementById("hosting_list");
+          const jList = document.getElementById("joining_list");
+          hList.innerHTML = ""; jList.innerHTML = "";
+
+          if(data.hosting.length === 0) hList.innerHTML = '<div class="no-data">主催している未精算のイベントはありません。</div>';
+          else {
+            data.hosting.forEach(ev => {
+              hList.innerHTML += `<div class="event-item-card"><div class="event-item-title">👑 ${ev.eventName}</div><div class="event-item-meta">総額: ${ev.amount.toLocaleString()}円</div><div class="event-item-meta">人数: ${ev.memberCount}人 / 締切: ${formatDateTime(ev.deadline)}</div><div class="event-item-price"><span style="font-size:10px; color:#718096; font-weight:normal;">1人あたり</span><br>${ev.splitPrice.toLocaleString()}円</div></div>`;
+            });
+          }
+
+          if(data.joining.length === 0) jList.innerHTML = '<div class="no-data">招待されている未精算のイベントはありません。</div>';
+          else {
+            data.joining.forEach(ev => {
+              jList.innerHTML += `<div class="event-item-card"><div class="event-item-title">👥 ${ev.eventName}</div><div class="event-item-meta">主催者: ${ev.creator}</div><div class="event-item-meta">全体: ${ev.memberCount}人 / 締切: ${formatDateTime(ev.deadline)}</div><div class="event-item-price"><span style="font-size:10px; color:#718096; font-weight:normal;">精算額</span><br>${ev.splitPrice.toLocaleString()}円</div></div>`;
+            });
+          }
+
+          // 既存選択用
+          const select = document.getElementById("select_event");
+          select.innerHTML = '<option value="">-- イベントを選んでください --</option>';
+          [...data.hosting, ...data.joining].forEach(e => {
+            select.innerHTML += `<option value="${e.txId}">${e.eventName}</option>`;
+          });
+
+          document.getElementById("skeleton").classList.add("hidden");
+          document.getElementById("mypage_screen").classList.remove("hidden");
+        }
+      }).catch(() => alert("同期エラー"));
   }
 
-  // 🌟 メンバー：招待イベントの最新詳細をDBからロードしてシミュレーション計算
+  // メンバー：招待ページ読み込み
   function loadMemberJoinPage(txId) {
     fetch(`${GAS_WEB_APP_URL}?action=getEventDetails&txId=${txId}`)
       .then(res => res.json())
@@ -232,104 +265,19 @@
           document.getElementById("join_creator").innerText = res.creator;
           document.getElementById("join_event_name").innerText = res.eventName;
           document.getElementById("join_amount").innerText = res.amount.toLocaleString() + "円";
-          document.getElementById("join_deadline").innerText = res.deadline;
+          document.getElementById("join_deadline").innerText = formatDateTime(res.deadline);
           
-          // リアルタイム割り勘シミュレーション (現在の人数 + 自分が加わった場合の人数)
-          const currentCount = res.members.length;
-          const nextCount = currentMembersContainMe(res.members, currentUserName) ? currentCount : currentCount + 1;
-          const splitPrice = Math.round(res.amount / nextCount);
-          document.getElementById("join_sim_price").innerText = splitPrice.toLocaleString() + " 円 (" + nextCount + "人の場合)";
-          
-          gEventData = { title: `【精算期日】${res.eventName}`, startRaw: res.deadline, endRaw: res.deadline };
+          const nextCount = res.members.includes(currentUserName) ? res.members.length : res.members.length + 1;
+          document.getElementById("join_sim_price").innerText = Math.round(res.amount / nextCount).toLocaleString() + " 円 (" + nextCount + "人の場合)";
+          gEventData = { title: `【精算期日】${res.eventName}`, startRaw: res.deadline };
 
           document.getElementById("skeleton").classList.add("hidden");
           document.getElementById("member_join_page").classList.remove("hidden");
-        } else {
-          alert("この精算イベントは存在しないか、終了しています。");
-        }
-      }).catch(err => alert("イベント読み込みエラー"));
+        } else { alert("終了または存在しない精算です。"); }
+      });
   }
 
-  function currentMembersContainMe(members, myName) {
-    return members.includes(myName);
-  }
-
-  // 🌟 メンバー：［参加する］［辞退する］を押したときのDB送信処理
-  function processMemberResponse(responseType) {
-    if (responseType === 'decline') {
-      alert("辞退しました。画面を閉じます。");
-      liff.closeWindow();
-      return;
-    }
-
-    document.getElementById("member_join_page").classList.add("hidden");
-    document.getElementById("skeleton").classList.remove("hidden");
-
-    fetch(GAS_WEB_APP_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "joinEvent",
-        txId: paramTxId,
-        userName: currentUserName
-      })
-    })
-    .then(res => res.json())
-    .then(res => {
-      if (res.status === 'success') {
-        document.getElementById("m_res_event").innerText = res.eventName;
-        document.getElementById("m_res_count").innerText = res.memberCount + " 人";
-        document.getElementById("m_res_price").innerText = Math.round(res.amount / res.memberCount).toLocaleString() + " 円";
-        
-        document.getElementById("modal_gcal").href = generateGoogleCalendarUrl(`【精算期日】${res.eventName}`, gEventData.startRaw, gEventData.endRaw);
-
-        document.getElementById("skeleton").classList.add("hidden");
-        document.getElementById("member_success_page").classList.remove("hidden");
-      } else {
-        alert("参加確定処理に失敗しました。");
-      }
-    }).catch(err => alert("通信エラーが発生しました。"));
-  }
-
-  // 入力フォーム切り替え関係
-  function toggleEventMode() {
-    const isNew = document.getElementById("type_new").checked;
-    document.getElementById("group_new_event").classList.toggle("hidden", !isNew);
-    document.getElementById("group_exist_event").classList.toggle("hidden", isNew);
-  }
-  function toggleBankInput() {
-    const isBank = document.getElementById("pay_method_main").value === "銀行振込";
-    document.getElementById("group_bank_info").classList.toggle("hidden", !isBank);
-  }
-  function formatDateTime(val) {
-    if (!val) return "";
-    const d = new Date(val);
-    return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  }
-
-  function generateGoogleCalendarUrl(title, startRaw, endRaw) {
-    if(!startRaw) return "#";
-    const cleanStart = startRaw.replace(/[^0-9T]/g, '').substring(0,11) + "00";
-    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${cleanStart}/${cleanStart}&details=${encodeURIComponent('精算の締め切り期日です。LINEからご対応をお願いします。')}`;
-  }
-
-  function downloadIcsFile() {
-    const cleanStart = gEventData.startRaw.replace(/[^0-9T]/g, '').substring(0,11) + "00";
-    const icsContent = [
-      "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//WarikanApp//NONSGML v1.0//EN","BEGIN:VEVENT",
-      `SUMMARY:${gEventData.title}`,`DTSTART;TZID=Asia/Tokyo:${cleanStart}`,`DTEND;TZID=Asia/Tokyo:${cleanStart}`,
-      `DESCRIPTION:精算締め切り期日です。LINEアプリから対応をお願いします。`,"END:VEVENT","END:VCALENDAR"
-    ].join("\n");
-    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob); link.download = "event_deadline.ics";
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    closeCalendarModal();
-  }
-
-  function openCalendarModal() { document.getElementById("calendar_modal").classList.remove("hidden"); }
-  function closeCalendarModal() { document.getElementById("calendar_modal").classList.add("hidden"); }
-
-  // 管理者：送信処理
+  // 🌟 【DB書き込み大改善】プリフライトエラーを100%回避するForm型POST
   function submitForm() {
     const mode = document.querySelector('input[name="event_type"]:checked').value;
     let eventName = mode === "新規" ? document.getElementById("event_name").value.trim() : document.getElementById("select_event").options[document.getElementById("select_event").selectedIndex].text;
@@ -340,51 +288,118 @@
     if (!eventName || !amount || !reqStartRaw || !deadlineRaw) { alert("未入力の項目があります。"); return; }
     const generatedTxId = "TX" + Date.now() + Math.floor(1000 + Math.random() * 9000);
 
-    liff.shareTargetPicker([
-      {
-        type: "flex",
-        altText: `【招待】${eventName}の精算グループ`,
-        contents: {
-          type: "bubble",
-          body: {
-            type: "box", layout: "vertical",
-            contents: [
-              { type: "text", text: "📢 精算グループへの招待", weight: "bold", size: "lg", color: "#06C755" },
-              { type: "text", text: `イベント: ${eventName}`, size: "md", margin: "md", weight: "bold" },
-              { type: "text", text: `申請者: ${currentUserName}`, size: "sm", color: "#666666" },
-              { type: "text", text: "この割り勘イベントに参加しますか？", size: "sm", margin: "lg", wrap: true }
-            ]
-          },
-          footer: {
-            type: "box", layout: "horizontal", spacing: "sm",
-            contents: [
-              // 🌟 「はい（参加）」のボタンリンクの飛び先を、このHTML自身の「join」モードに設定！
-              { type: "button", style: "primary", color: "#06C755", action: { type: "uri", label: "⭕ はい (参加)", uri: `https://liff.line.me/${LIFF_ID}?action=join&txId=${generatedTxId}` } },
-              { type: "button", style: "secondary", action: { type: "uri", label: "❌ いいえ", uri: `https://liff.line.me/${LIFF_ID}?action=decline&txId=${generatedTxId}` } }
-            ]
+    document.getElementById("app").classList.add("hidden");
+    document.getElementById("skeleton").classList.remove("hidden");
+
+    const formData = new URLSearchParams();
+    formData.append("action", "createNewEvent");
+    formData.append("txId", generatedTxId);
+    formData.append("eventName", eventName);
+    formData.append("amount", amount);
+    formData.append("requestStart", reqStartRaw);
+    formData.append("deadline", deadlineRaw);
+    formData.append("creator", currentUserName);
+
+    // 🌟 先に100%データベースに書き込んで、成功したらLINEを起動させる超安全設計！
+    fetch(GAS_WEB_APP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: formData.toString()
+    })
+    .then(res => res.json())
+    .then(dbResult => {
+      if (dbResult.status === "success") {
+        liff.shareTargetPicker([
+          {
+            type: "flex", altText: `【招待】${eventName}の精算グループ`,
+            contents: {
+              type: "bubble",
+              body: {
+                type: "box", layout: "vertical",
+                contents: [
+                  { type: "text", text: "📢 精算グループへの招待", weight: "bold", size: "lg", color: "#06C755" },
+                  { type: "text", text: `イベント: ${eventName}`, size: "md", margin: "md", weight: "bold" },
+                  { type: "text", text: `申請者: ${currentUserName}`, size: "sm", color: "#666666" },
+                  { type: "text", text: "この割り勘イベントに参加しますか？", size: "sm", margin: "lg", wrap: true }
+                ]
+              },
+              footer: {
+                type: "box", layout: "horizontal", spacing: "sm",
+                contents: [
+                  { type: "button", style: "primary", color: "#06C755", action: { type: "uri", label: "⭕ はい (参加)", uri: `https://liff.line.me/${LIFF_ID}?action=join&txId=${generatedTxId}` } },
+                  { type: "button", style: "secondary", action: { type: "uri", label: "❌ いいえ", uri: `https://liff.line.me/${LIFF_ID}?action=decline&txId=${generatedTxId}` } }
+                ]
+              }
+            }
           }
-        }
-      }
-    ]).then((res) => {
-      if (res) {
-        fetch(GAS_WEB_APP_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "createNewEvent", txId: generatedTxId, eventName: eventName, amount: amount, requestStart: formatDateTime(reqStartRaw), deadline: formatDateTime(deadlineRaw), creator: currentUserName
-          })
-        }).then(response => response.json()).catch(err => console.error(err));
-
-        document.getElementById("res_event").innerText = eventName;
-        document.getElementById("res_amount").innerText = Number(amount).toLocaleString() + "円";
-        document.getElementById("res_period").innerText = `${formatDateTime(reqStartRaw)} 〜 ${formatDateTime(deadlineRaw)}`;
-        gEventData = { title: `【精算期日】${eventName}`, startRaw: reqStartRaw, endRaw: deadlineRaw };
-        document.getElementById("modal_gcal").href = generateGoogleCalendarUrl(gEventData.title, gEventData.startRaw, gEventData.endRaw);
-
-        document.getElementById("app").classList.add("hidden");
-        document.getElementById("success_page").classList.remove("hidden");
-      }
-    }).catch(err => alert("送信キャンセル"));
+        ]).then(() => {
+          document.getElementById("res_event").innerText = eventName;
+          document.getElementById("res_amount").innerText = Number(amount).toLocaleString() + "円";
+          document.getElementById("res_period").innerText = `${formatDateTime(reqStartRaw)} 〜 ${formatDateTime(deadlineRaw)}`;
+          gEventData = { title: `【精算期日】${eventName}`, startRaw: deadlineRaw };
+          document.getElementById("modal_gcal").href = generateGoogleCalendarUrl(gEventData.title, gEventData.startRaw);
+          document.getElementById("skeleton").classList.add("hidden");
+          document.getElementById("success_page").classList.remove("hidden");
+        }).catch(() => { location.reload(); });
+      } else { alert("DB書き込み失敗: " + dbResult.message); location.reload(); }
+    }).catch(() => { alert("通信エラー"); location.reload(); });
   }
+
+  function processMemberResponse(responseType) {
+    if (responseType === 'decline') { liff.closeWindow(); return; }
+    document.getElementById("member_join_page").classList.add("hidden");
+    document.getElementById("skeleton").classList.remove("hidden");
+
+    const formData = new URLSearchParams();
+    formData.append("action", "joinEvent");
+    formData.append("txId", paramTxId);
+    formData.append("userName", currentUserName);
+
+    fetch(GAS_WEB_APP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: formData.toString()
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.status === 'success') {
+        document.getElementById("m_res_event").innerText = res.eventName;
+        document.getElementById("m_res_count").innerText = res.memberCount + " 人";
+        document.getElementById("m_res_price").innerText = Math.round(res.amount / res.memberCount).toLocaleString() + " 円";
+        document.getElementById("modal_gcal").href = generateGoogleCalendarUrl(`【精算期日】${res.eventName}`, gEventData.startRaw);
+        document.getElementById("skeleton").classList.add("hidden");
+        document.getElementById("member_success_page").classList.remove("hidden");
+      }
+    });
+  }
+
+  // 🌟 【iPhoneカレンダー大改善】外部ブラウザ（Safari等）を強制起動させて制限を完全突破
+  function openIphoneCalendar() {
+    const url = `${GAS_WEB_APP_URL}?action=icsPage&title=${encodeURIComponent(gEventData.title)}&date=${encodeURIComponent(gEventData.startRaw)}`;
+    liff.openWindow({ url: url, external: true });
+    closeCalendarModal();
+  }
+
+  function generateGoogleCalendarUrl(title, startRaw) {
+    if(!startRaw) return "#";
+    const digits = startRaw.replace(/[^0-9]/g, '');
+    const cleanStart = digits.substring(0,8) + "T" + digits.substring(8,12) + "00";
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${cleanStart}/${cleanStart}&details=LINEアプリからご対応をお願いします。`;
+  }
+
+  function formatDateTime(val) {
+    if (!val) return "";
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return val; // 既にフォーマット済みの場合はそのまま
+    return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+
+  function showInputForm() { document.getElementById("mypage_screen").classList.add("hidden"); document.getElementById("app").classList.remove("hidden"); }
+  function backToMyPage() { document.getElementById("app").classList.add("hidden"); document.getElementById("skeleton").classList.remove("hidden"); loadMyPage(); }
+  function toggleEventMode() { const isNew = document.getElementById("type_new").checked; document.getElementById("group_new_event").classList.toggle("hidden", !isNew); document.getElementById("group_exist_event").classList.toggle("hidden", isNew); }
+  function toggleBankInput() { const isBank = document.getElementById("pay_method_main").value === "銀行振込"; document.getElementById("group_bank_info").classList.toggle("hidden", !isBank); }
+  function openCalendarModal() { document.getElementById("calendar_modal").classList.remove("hidden"); }
+  function closeCalendarModal() { document.getElementById("calendar_modal").classList.add("hidden"); }
 </script>
 </body>
 </html>
