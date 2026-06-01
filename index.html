@@ -12,7 +12,6 @@
     .form-group { margin-bottom: 18px; }
     label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; color: #444; }
     
-    /* 🎨 すべての入力枠（日付含む）のサイズとデザインを完全に統一 */
     input[type="text"], input[type="number"], input[type="datetime-local"], select {
       width: 100%; height: 48px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: #fafafa; transition: border 0.2s; -webkit-appearance: none;
     }
@@ -29,7 +28,7 @@
     .bank-row { display: flex; gap: 8px; margin-bottom: 8px; }
     .bank-row input, .bank-row select { height: 40px; padding: 8px; font-size: 14px; background: #fff; }
 
-    /* 🌟 ホットペッパー風：申請完了画面のスタイリング */
+    /* 🌟 申請完了画面 */
     .success-container { text-align: center; padding: 40px 20px; background: white; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .success-icon { font-size: 48px; color: #06C755; margin-bottom: 16px; }
     .success-title { font-size: 22px; font-weight: bold; margin-bottom: 8px; color: #111; }
@@ -37,7 +36,17 @@
     .info-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: #f8f9fa; border-radius: 8px; overflow: hidden; font-size: 14px; }
     .info-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
     .info-table td.label-td { font-weight: bold; color: #555; width: 35%; }
-    .btn-calendar { background-color: #4285F4; color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; box-sizing: border-box; box-shadow: 0 3px 6px rgba(66,133,244,0.2); }
+    
+    .btn-calendar-trigger { background-color: #4285F4; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; box-shadow: 0 3px 6px rgba(66,133,244,0.2); }
+
+    /* 🌟 カレンダー選択ポップアップ（モーダル窓） */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-box { background: white; padding: 24px; border-radius: 12px; width: 85%; max-width: 320px; text-align: center; }
+    .modal-title { font-size: 16px; font-weight: bold; margin-bottom: 16px; color: #111; }
+    .modal-btn { display: block; width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: none; font-size: 14px; font-weight: bold; cursor: pointer; text-decoration: none; box-sizing: border-box; }
+    .btn-google { background: #de4b39; color: white; }
+    .btn-apple { background: #111; color: white; }
+    .btn-close { background: #eee; color: #444; margin-bottom: 0; margin-top: 10px; }
 
     /* スケルトンローディング */
     .skeleton-screen { padding: 20px; background: white; min-height: 100vh; box-sizing: border-box; }
@@ -51,7 +60,7 @@
 <div id="skeleton" class="skeleton-screen">
   <div class="skeleton-line" style="width: 60%; height: 26px; margin-bottom: 25px;"></div>
   <div class="skeleton-line" style="width: 100%; height: 48px; border-radius: 8px; margin-bottom: 20px;"></div>
-  <div class="skeleton-line" style="width: 40px; height: 48px; border-radius: 8px;"></div>
+  <div class="skeleton-line" style="width: 100%; height: 48px; border-radius: 8px;"></div>
 </div>
 
 <div id="app" class="card hidden">
@@ -128,7 +137,16 @@
     <tr><td class="label-td">受付期間</td><td id="res_period">-</td></tr>
   </table>
 
-  <a id="btn_gcal" href="#" target="_blank" class="btn-calendar">📅 Googleカレンダーに追加</a>
+  <button class="btn-calendar-trigger" onclick="openCalendarModal()">📅 カレンダーに追加する</button>
+</div>
+
+<div id="calendar_modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-title">お使いのカレンダーを選択</div>
+    <a id="modal_gcal" href="#" target="_blank" class="modal-btn btn-google" onclick="closeCalendarModal()">Google カレンダー</a>
+    <button id="modal_ical" class="modal-btn btn-apple" onclick="downloadIcsFile()">iPhone / 標準カレンダー</button>
+    <button class="modal-btn btn-close" onclick="closeCalendarModal()">キャンセル</button>
+  </div>
 </div>
 
 <script>
@@ -137,6 +155,7 @@
 
   let activeEvents = [];
   let currentUserName = "申請者";
+  let gEventData = {}; // カレンダー生成用の一時記憶データ
 
   window.onload = function() {
     liff.init({ liffId: LIFF_ID }).then(() => {
@@ -149,7 +168,7 @@
     fetch(`${GAS_WEB_APP_URL}?action=getInitialData`)
       .then(res => res.json())
       .then(data => {
-        activeEvents = data.activeEvents;
+        activeEvents = data.activeEvents || [];
         const select = document.getElementById("select_event");
         activeEvents.forEach(e => {
           const opt = document.createElement("option");
@@ -157,7 +176,7 @@
         });
         document.getElementById("skeleton").classList.add("hidden");
         document.getElementById("app").classList.remove("hidden");
-      }).catch(err => alert("同期失敗"));
+      }).catch(err => alert("初期同期に失敗しました。"));
   }
 
   function toggleEventMode() {
@@ -177,11 +196,43 @@
     return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
-  function generateGoogleCalendarUrl(title, startIso, endIso) {
-    const sStr = startIso.replace(/[-:]/g, '') + '00Z';
-    const eStr = endIso.replace(/[-:]/g, '') + '00Z';
-    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${sStr}/${eStr}&details=${encodeURIComponent('精算受付締め切り期日です。アプリからご対応をお願いします。')}`;
+  // 📅 時差バグを完全に修正したGoogleカレンダーURL生成（末尾のZを排除）
+  function generateGoogleCalendarUrl(title, startRaw, endRaw) {
+    const sStr = startRaw.replace(/[-:]/g, '').replace('T', 'T') + '00';
+    const eStr = endRaw.replace(/[-:]/g, '').replace('T', 'T') + '00';
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${sStr}/${eStr}&details=${encodeURIComponent('精算の締め切り期日です。LINEアプリからご対応をお願いします。')}`;
   }
+
+  // 📱 iPhone/端末標準用の .ics ファイルを生成して自動的に開く関数
+  function downloadIcsFile() {
+    const sStr = gEventData.startRaw.replace(/[-:]/g, '') + '00';
+    const eStr = gEventData.endRaw.replace(/[-:]/g, '') + '00';
+    
+    const icsContent = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//WarikanApp//NONSGML v1.0//EN",
+      "BEGIN:VEVENT",
+      `SUMMARY:${gEventData.title}`,
+      `DTSTART;TZID=Asia/Tokyo:${sStr}`,
+      `DTEND;TZID=Asia/Tokyo:${eStr}`,
+      `DESCRIPTION:精算締め切り期日です。LINEアプリから対応をお願いします。`,
+      "END:VEVENT",
+      "END:VCALENDAR"
+    ].join("\n");
+
+    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "event_deadline.ics";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    closeCalendarModal();
+  }
+
+  function openCalendarModal() { document.getElementById("calendar_modal").classList.remove("hidden"); }
+  function closeCalendarModal() { document.getElementById("calendar_modal").classList.add("hidden"); }
 
   function submitForm() {
     const mode = document.querySelector('input[name="event_type"]:checked').value;
@@ -192,7 +243,7 @@
 
     if (!eventName || !amount || !reqStartRaw || !deadlineRaw) { alert("未入力の項目があります。"); return; }
 
-    // 🌟 1. ［メンバーを選んで申請する］を押すとTarget Pickerが起動！
+    // 🌟 1. ターゲットピッカーの起動
     liff.shareTargetPicker([
       {
         type: "flex",
@@ -214,21 +265,42 @@
             layout: "horizontal",
             spacing: "sm",
             contents: [
-              { type: "button", style: "primary", color: "#06C755", action: { type: "uri", label: "⭕ はい (参加)", uri: "https://liff.line.me/今後の参加用LIFF_ID" } },
-              { type: "button", style: "secondary", action: { type: "uri", label: "❌ いいえ", uri: "https://liff.line.me/今後の参加用LIFF_ID?status=no" } }
+              { type: "button", style: "primary", color: "#06C755", action: { type: "uri", label: "⭕ はい (参加)", uri: `https://liff.line.me/${LIFF_ID}?action=join&name=${encodeURIComponent(currentUserName)}` } },
+              { type: "button", style: "secondary", action: { type: "uri", label: "❌ いいえ", uri: `https://liff.line.me/${LIFF_ID}?status=no` } }
             ]
           }
         }
       }
     ]).then((res) => {
       if (res) {
-        // 🌟 2. 送信が成功したら、画面がホットペッパー風の完了画面に切り替わる！
+        // 🌟 2. 【最重要】メッセージ送信成功と同時に裏側でGAS（DB）にデータをぶん投げて仮登録する
+        const postData = {
+          action: "createNewEvent",
+          eventName: eventName,
+          amount: amount,
+          requestStart: formatDateTime(reqStartRaw),
+          deadline: formatDateTime(deadlineRaw),
+          creator: currentUserName
+        };
+
+        fetch(GAS_WEB_APP_URL, {
+          method: "POST",
+          body: JSON.stringify(postData)
+        })
+        .then(response => response.json())
+        .then(dbResult => {
+          console.log("DB書き込み成功:", dbResult);
+        })
+        .catch(err => console.error("DB連携エラー:", err));
+
+        // 🌟 3. 画面をホットペッパー風の完了画面に切り替え
         document.getElementById("res_event").innerText = eventName;
         document.getElementById("res_amount").innerText = Number(amount).toLocaleString() + "円";
         document.getElementById("res_period").innerText = `${formatDateTime(reqStartRaw)} 〜 ${formatDateTime(deadlineRaw)}`;
         
-        // GoogleカレンダーURL生成
-        document.getElementById("btn_gcal").href = generateGoogleCalendarUrl(`【精算期日】${eventName}`, reqStartRaw, deadlineRaw);
+        // カレンダー用データの一時退避
+        gEventData = { title: `【精算期日】${eventName}`, startRaw: reqStartRaw, endRaw: deadlineRaw };
+        document.getElementById("modal_gcal").href = generateGoogleCalendarUrl(gEventData.title, gEventData.startRaw, gEventData.endRaw);
 
         document.getElementById("app").classList.add("hidden");
         document.getElementById("success_page").classList.remove("hidden");
