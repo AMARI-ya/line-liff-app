@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>自動割り勘精算</title>
+  <title>グループ自動割り勘</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; min-height: 100vh; box-sizing: border-box; }
@@ -11,13 +11,12 @@
     h2 { margin-top: 0; font-size: 19px; color: #111; border-left: 5px solid #06C755; padding-left: 10px; margin-bottom: 20px; }
     h3 { font-size: 14px; color: #555; margin: 15px 0 8px 0; font-weight: bold; }
     
-    /* 📱 横幅はみ出しバグを完全に潰すCSS設定 */
-    .form-group { margin-bottom: 16px; width: 100%; box-sizing: border-box; padding: 0; }
+    .form-group { margin-bottom: 16px; width: 100%; box-sizing: border-box; }
     label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: #444; }
+    .label-bold { font-weight: bold; color: #111; }
     
     input[type="text"], input[type="number"], input[type="datetime-local"], select {
       width: 100% !important;
-      max-width: 100% !important;
       height: 46px;
       padding: 10px;
       border: 1px solid #ccc;
@@ -26,12 +25,10 @@
       font-size: 16px;
       background-color: #fafafa;
       margin: 0;
-      -webkit-appearance: none; /* iOSの強制幅拡張を無効化 */
-      appearance: none;
     }
     
     .radio-group { display: flex; gap: 10px; margin-bottom: 16px; width: 100%; box-sizing: border-box; }
-    .radio-label { display: flex; align-items: center; gap: 6px; background: #f0f0f0; padding: 12px; border-radius: 8px; cursor: pointer; flex: 1; justify-content: center; font-weight: bold; font-size: 14px; color: #555; }
+    .radio-label { display: flex; align-items: center; gap: 6px; background: #e2e8f0; padding: 12px; border-radius: 8px; cursor: pointer; flex: 1; justify-content: center; font-weight: bold; font-size: 14px; color: #4a5568; }
     input[type="radio"]:checked + .radio-label { background: #06C755; color: white; }
     input[type="radio"] { display: none; }
     
@@ -43,8 +40,8 @@
     .event-item-card { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; font-size: 13px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02); cursor: pointer; }
     .event-item-title { font-weight: bold; font-size: 15px; color: #111; margin-bottom: 4px; padding-right: 90px; }
     .event-item-meta { color: #718096; font-size: 12px; margin-bottom: 2px; }
-    .event-item-price { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 15px; text-align: right; line-height: 1.2; }
-    .badge-status { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; color: white; margin-left: 6px; }
+    .event-item-price { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; text-align: right; line-height: 1.3; color:#4a5568; }
+    .price-bold { font-weight: bold; font-size: 16px; }
 
     .success-container { text-align: center; padding: 30px 20px; background: white; min-height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .success-icon { font-size: 44px; color: #06C755; margin-bottom: 12px; }
@@ -55,38 +52,38 @@
     .info-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
     .info-table td.label-td { font-weight: bold; color: #555; width: 35%; }
     
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box; }
-    .modal-box { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 340px; text-align: center; box-sizing: border-box; max-height: 90vh; overflow-y: auto; }
-    .modal-btn { display: block; width: 100%; padding: 12px; margin-bottom: 8px; border-radius: 6px; border: none; font-size: 14px; font-weight: bold; cursor: pointer; text-decoration: none; box-sizing: border-box; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box; }
+    .modal-box { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 350px; text-align: center; box-sizing: border-box; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+    .modal-btn { display: block; width: 100%; padding: 11px; margin-bottom: 8px; border-radius: 6px; border: none; font-size: 13px; font-weight: bold; cursor: pointer; text-decoration: none; box-sizing: border-box; text-align: center; }
     
     .detail-section { text-align: left; margin-bottom: 15px; font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
-    .detail-title { font-weight: bold; color: #111; margin-bottom: 6px; font-size: 14px; display: flex; justify-content: space-between; }
-    .exp-row { display: flex; justify-content: space-between; padding: 4px 0; color: #4a5568; }
-
-    .skeleton-screen { padding: 20px; background: white; min-height: 100vh; box-sizing: border-box; }
-    .skeleton-line { height: 18px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; margin-bottom: 12px; border-radius: 4px; }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .detail-title { font-weight: bold; color: #111; margin-bottom: 6px; font-size: 14px; }
+    .exp-row-card { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; margin-bottom: 8px; font-size: 12px; position: relative; }
+    
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #06C755; border-radius: 50%; width: 36px; height: 36px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-<div id="skeleton" class="skeleton-screen">
-  <div class="skeleton-line" style="width: 50%; height: 24px; margin-bottom: 20px;"></div>
-  <div class="skeleton-line" style="width: 100%; height: 45px; margin-bottom: 15px;"></div>
-  <div class="skeleton-line" style="width: 100%; height: 45px;"></div>
+<div id="loading_overlay" class="modal-overlay" style="background: rgba(255,255,255,0.85); z-index: 2000;">
+  <div style="text-align: center;">
+    <div class="spinner"></div>
+    <div style="font-weight: bold; color: #333; font-size: 14px;">データを読み込み中...</div>
+  </div>
 </div>
 
 <div id="mypage_screen" class="card hidden">
   <h2>📊 精算マイページ</h2>
-  <div style="font-size:14px; margin-bottom:15px; color:#4a5568;">ユーザー: <span id="mypage_user_name" style="font-weight:bold; color:#1a202c;">-</span></div>
+  <div style="font-size:14px; margin-bottom:15px; color:#4a5568;">ユーザー: <span id="mypage_user_name" style="font-weight:bold; color:#111;">-</span></div>
   
   <button class="btn-submit" style="margin-bottom:20px; background-color:#007aff; box-shadow: 0 4px 12px rgba(0,122,255,0.2);" onclick="showInputForm()">➕ 新しく出費を精算申請する</button>
 
-  <h3>👑 あなたが管理・主催（回収中）</h3>
+  <h3>👑 あなたが管理・主催</h3>
   <div id="hosting_list" class="event-list-container"></div>
 
-  <h3>👥 あなたが参加中（精算待ち）</h3>
+  <h3>👥 あなたが参加中</h3>
   <div id="joining_list" class="event-list-container"></div>
 </div>
 
@@ -96,33 +93,33 @@
   
   <div class="radio-group">
     <input type="radio" id="type_new" name="event_type" value="新規" checked onchange="toggleEventMode()">
-    <label for="type_new" class="radio-label">🆕 新規イベント</label>
+    <label for="type_new" class="radio-label">🆕 新規イベント作成</label>
     <input type="radio" id="type_exist" name="event_type" value="既存" onchange="toggleEventMode()">
-    <label for="type_exist" class="radio-label">📂 既存に追加</label>
+    <label for="type_exist" class="radio-label">📂 既存イベントに追加</label>
   </div>
 
   <div id="group_new_event" class="form-group">
-    <label for="event_name">イベント名 / グループ名</label>
+    <label for="event_name" class="label-bold">Q. イベント名・グループ名は何ですか？</label>
     <input type="text" id="event_name" placeholder="例: 夏合宿2026, 週末BBQ">
   </div>
 
   <div id="group_exist_event" class="form-group hidden">
-    <label for="select_event">既存の精算イベントを選択</label>
+    <label for="select_event" class="label-bold">Q. 既存のどの精算イベントに追加しますか？</label>
     <select id="select_event"></select>
   </div>
 
   <div class="form-group">
-    <label for="amount">今回の支払額 (円)</label>
-    <input type="number" id="amount" inputmode="numeric" placeholder="金額を数字で入力">
+    <label for="expense_name" class="label-bold">Q. 今回支払った立替の区分・項目名は何ですか？</label>
+    <input type="text" id="expense_name" placeholder="例: コテージ代、お肉代、ガソリン代">
   </div>
 
   <div class="form-group">
-    <label for="request_start">請求受付開始日</label>
-    <input type="datetime-local" id="request_start">
+    <label for="amount" class="label-bold">Q. 今回の支払総額はいくらですか？ (円)</label>
+    <input type="number" id="amount" inputmode="numeric" placeholder="金額を数字だけで入力">
   </div>
 
   <div class="form-group">
-    <label for="deadline">請求の締め切り期日</label>
+    <label for="deadline" class="label-bold">Q. この立替項目の精算締め切り期日はいつですか？</label>
     <input type="datetime-local" id="deadline">
   </div>
 
@@ -132,12 +129,12 @@
 <div id="success_page" class="success-container hidden">
   <div class="success-icon">✓</div>
   <div class="success-title">申請・追加が完了！</div>
-  <div class="success-text">LINEメンバーにメッセージを送信しました。</div>
+  <div class="success-text">LINEメンバーに通知メッセージを送信しました。</div>
   <table class="info-table">
     <tr><td class="label-td">イベント</td><td id="res_event">-</td></tr>
-    <tr><td class="label-td">登録金額</td><td id="res_amount">-</td></tr>
+    <tr><td class="label-td">項目/金額</td><td id="res_amount">-</td></tr>
   </table>
-  <button class="btn-calendar-trigger" style="margin-bottom:10px;" onclick="openCalendarModal()">📅 カレンダーに期日を追加</button>
+  <button class="btn-submit" style="background-color:#e0a800; margin-bottom:10px;" onclick="openCalendarModal()">📅 カレンダーに期日を追加</button>
   <button class="btn-submit" style="background-color:#007aff;" onclick="backToMyPageFromDone()">📊 マイページへ戻る</button>
 </div>
 
@@ -148,8 +145,6 @@
   </div>
   <table class="info-table" style="margin-bottom: 15px;">
     <tr><td class="label-td">イベント名</td><td id="join_event_name">-</td></tr>
-    <tr><td class="label-td">現在の総額</td><td id="join_amount">-</td></tr>
-    <tr><td class="label-td">精算締切</td><td id="join_deadline">-</td></tr>
   </table>
   <button class="btn-submit" onclick="processMemberResponse('join')">⭕ 参加する（グループに加わる）</button>
   <button class="btn-decline" onclick="processMemberResponse('decline')">❌ 今回はいいえ（閉じる）</button>
@@ -159,37 +154,50 @@
   <div class="success-icon" style="color: #007aff;">✓</div>
   <div class="success-title">参加を確定しました！</div>
   <div class="success-text">精算メンバーの割り勘分母に追加されました。</div>
-  <button class="btn-calendar-trigger" style="margin-bottom:10px;" onclick="openCalendarModal()">📅 カレンダーに期日を追加</button>
   <button class="btn-submit" style="background-color:#007aff;" onclick="backToMyPageFromDone()">📊 マイページへ戻る</button>
 </div>
 
 <div id="detail_modal" class="modal-overlay hidden">
   <div class="modal-box">
-    <h3 style="margin-top:0; font-size:16px; border-bottom:2px solid #06C755; padding-bottom:6px;" id="md_event_name">-</h3>
+    <h3 style="margin-top:0; font-size:16px; border-bottom:2px solid #06C755; padding-bottom:6px; text-align:left;" id="md_event_name">-</h3>
     
     <div class="detail-section">
-      <div class="detail-title">💰 精算計算（あなたの状況）</div>
-      <div id="md_calc_detail" style="line-height: 1.6; font-size:13px; color:#2d3748;">-</div>
+      <div class="detail-title">💰 現在の精算状況（未精算分）</div>
+      <div id="md_calc_detail" style="line-height: 1.6; font-size:13px; color:#111;">-</div>
     </div>
-
+    
     <div class="detail-section">
-      <div class="detail-title">📂 出費明細一覧</div>
-      <div id="md_expenses_list" style="max-height:100px; overflow-y:auto;"></div>
+      <div class="detail-title">📋 立替項目の一覧・管理</div>
+      <div id="md_expenses_list" style="max-height:220px; overflow-y:auto;"></div>
     </div>
-
+    
     <div class="detail-section">
       <div class="detail-title">👥 参加メンバー</div>
       <div id="md_members_list" style="color:#4a5568;">-</div>
     </div>
 
-    <div id="md_admin_controls" class="hidden" style="background:#fff5f5; padding:10px; border-radius:8px; margin-bottom:12px;">
-      <div style="font-weight:bold; font-size:11px; color:#c53030; margin-bottom:6px;">👑 主催者管理メニュー</div>
-      <button class="modal-btn" style="background:#e53e3e; color:white; padding:8px; font-size:12px;" onclick="clickUpdateStatus('削除')">🚨 この精算を取り下げる(削除)</button>
-      <button class="modal-btn" style="background:#319795; color:white; padding:8px; font-size:12px;" onclick="clickUpdateStatus('完了')">✓ 精算を完了(済)にする</button>
-    </div>
-
-    <button class="modal-btn" style="background:#007aff; color:white;" onclick="clickQuickAddExpense()">➕ このイベントに出費を追加</button>
+    <button class="modal-btn" style="background:#06C755; color:white;" onclick="openQuickAddModal()">➕ このイベントに出費を追加</button>
     <button class="modal-btn" style="background:#eee; color:#333;" onclick="closeDetailModal()">閉じる</button>
+  </div>
+</div>
+
+<div id="quick_add_modal" class="modal-overlay hidden" style="z-index:1100;">
+  <div class="modal-box">
+    <h3 style="margin-top:0;">➕ 新たな立替の追加</h3>
+    <div class="form-group" style="text-align:left;">
+      <label class="label-bold">Q. 追加する立替の項目名（区分）</label>
+      <input type="text" id="qa_name" placeholder="例: お肉代、追加の飲み物">
+    </div>
+    <div class="form-group" style="text-align:left;">
+      <label class="label-bold">Q. 金額 (円)</label>
+      <input type="number" id="qa_amount" inputmode="numeric" placeholder="金額を入力">
+    </div>
+    <div class="form-group" style="text-align:left;">
+      <label class="label-bold">Q. この項目の精算期日</label>
+      <input type="datetime-local" id="qa_deadline">
+    </div>
+    <button class="btn-submit" onclick="submitQuickAddExpense()">🚀 追加してグループに通知</button>
+    <button class="modal-btn" style="background:#eee; color:#333; margin-top:8px;" onclick="closeQuickAddModal()">キャンセル</button>
   </div>
 </div>
 
@@ -203,6 +211,7 @@
 </div>
 
 <script>
+  // ⚠️ ご自身の情報を正確に設定してください
   const LIFF_ID = "2010226382-7KYbDoOC"; 
   const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3NF7dnj_aC1Js7ZuYMT66OEPCVPfTzM68-2b-eB4DBI_s0CV5TnmNw3ndukzG_nHr/exec"; 
 
@@ -212,14 +221,27 @@
   let paramAction = null;
   let selectedTxIdForModal = null;
 
-  window.onload = function() {
+  function showLoading() { document.getElementById("loading_overlay").classList.remove("hidden"); }
+  function hideLoading() { document.getElementById("loading_overlay").classList.add("hidden"); }
+
+  function getQueryParam(name) {
     const urlParams = new URLSearchParams(window.location.search);
-    paramAction = urlParams.get('action');
-    paramTxId = urlParams.get('txId');
+    if (urlParams.has(name)) return urlParams.get(name);
+    const hashSplit = window.location.hash.split('?');
+    if (hashSplit.length > 1) {
+      const hashParams = new URLSearchParams(hashSplit[1]);
+      if (hashParams.has(name)) return hashParams.get(name);
+    }
+    return null;
+  }
+
+  window.onload = function() {
+    paramAction = getQueryParam('action');
+    paramTxId = getQueryParam('txId');
 
     liff.init({ liffId: LIFF_ID }).then(() => {
       if (!liff.isLoggedIn()) { liff.login(); } else { routeScreen(); }
-    }).catch(err => console.error(err));
+    }).catch(err => alert("LIFF初期化エラー: " + err));
   };
 
   function routeScreen() {
@@ -231,152 +253,196 @@
     });
   }
 
-  // 📊 マイページデータ読み込み (GETに変更し100%同期成功)
+  // 🔄 すべての通信を安全な「POST方式」で行う共通関数（DB未反映バグを100%防止）
+  function postToGas(actionName, paramsObj) {
+    showLoading();
+    const formData = new URLSearchParams();
+    formData.append("action", actionName);
+    for (const key in paramsObj) { formData.append(key, paramsObj[key]); }
+    
+    return fetch(GAS_WEB_APP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: formData.toString()
+    }).then(res => res.json()).finally(() => hideLoading());
+  }
+
   function loadMyPage() {
     document.getElementById("mypage_user_name").innerText = currentUserName;
-    fetch(`${GAS_WEB_APP_URL}?action=getMyEvents&userName=${encodeURIComponent(currentUserName)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'success') {
-          const hList = document.getElementById("hosting_list");
-          const jList = document.getElementById("joining_list");
-          const select = document.getElementById("select_event");
-          hList.innerHTML = ""; jList.innerHTML = "";
-          select.innerHTML = '<option value="">-- 既存イベントを選択 --</option>';
+    postToGas("getMyEvents", { userName: currentUserName }).then(data => {
+      if (data.status === 'success') {
+        const hList = document.getElementById("hosting_list");
+        const jList = document.getElementById("joining_list");
+        const select = document.getElementById("select_event");
+        hList.innerHTML = ""; jList.innerHTML = "";
+        select.innerHTML = '<option value="">-- 既存イベントを選択 --</option>';
 
-          if(data.hosting.length === 0) hList.innerHTML = '<div class="no-data">主催している未精算イベントはありません。</div>';
-          else {
-            data.hosting.forEach(ev => {
-              const badgeColor = ev.status === '完了' ? '#888' : '#06C755';
-              const priceText = ev.balance >= 0 ? `ともらう<br><span style="color:#06C755; font-size:16px;">+${ev.balance.toLocaleString()}円</span>` : `と支払う<br><span style="color:#df382c; font-size:16px;">${ev.balance.toLocaleString()}円</span>`;
-              hList.innerHTML += `<div class="event-item-card" onclick="openDetailModal('${ev.txId}')"><div class="event-item-title">👑 ${ev.eventName}<span class="badge-status" style="background:${badgeColor}">${ev.status}</span></div><div class="event-item-meta">総額: ${ev.totalAmount.toLocaleString()}円 (計${ev.memberCount}人)</div><div class="event-item-meta">締切: ${formatDateTime(ev.deadline)}</div><div class="event-item-price"><span style="font-size:9px; color:#718096; font-weight:normal;">あなたがあ</span><br>${priceText}</div></div>`;
-              if(ev.status !== '完了') select.innerHTML += `<option value="${ev.txId}">${ev.eventName}</option>`;
-            });
-          }
-
-          if(data.joining.length === 0) jList.innerHTML = '<div class="no-data">参加している精算イベントはありません。</div>';
-          else {
-            data.joining.forEach(ev => {
-              const badgeColor = ev.status === '完了' ? '#888' : '#4285F4';
-              const priceText = ev.balance >= 0 ? `ともらう<br><span style="color:#06C755; font-size:16px;">+${ev.balance.toLocaleString()}円</span>` : `と支払う<br><span style="color:#df382c; font-size:16px;">${ev.balance.toLocaleString()}円</span>`;
-              jList.innerHTML += `<div class="event-item-card" onclick="openDetailModal('${ev.txId}')"><div class="event-item-title">👥 ${ev.eventName}<span class="badge-status" style="background:${badgeColor}">${ev.status}</span></div><div class="event-item-meta">主催: ${ev.creator} / 総額: ${ev.totalAmount.toLocaleString()}円</div><div class="event-item-meta">締切: ${formatDateTime(ev.deadline)}</div><div class="event-item-price"><span style="font-size:9px; color:#718096; font-weight:normal;">あなたがあ</span><br>${priceText}</div></div>`;
-              if(ev.status !== '完了') select.innerHTML += `<option value="${ev.txId}">${ev.eventName}</option>`;
-            });
-          }
-
-          document.getElementById("skeleton").classList.add("hidden");
-          document.getElementById("mypage_screen").classList.remove("hidden");
+        if(data.hosting.length === 0) hList.innerHTML = '<div style="color:#888; padding:10px; font-size:13px;">主催しているイベントはありません。</div>';
+        else {
+          data.hosting.forEach(ev => {
+            const priceText = ev.balance >= 0 ? `もらえます<br><span class="price-bold" style="color:#06C755;">+${ev.balance.toLocaleString()}円</span>` : `支払います<br><span class="price-bold" style="color:#df382c;">${ev.balance.toLocaleString()}円</span>`;
+            const statusBadge = ev.hasActive ? `<span style="background:#06C755; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px; font-weight:bold;">回収中</span>` : `<span style="background:#888; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px; font-weight:bold;">精算済</span>`;
+            hList.innerHTML += `<div class="event-item-card" onclick="openDetailModal('${ev.txId}')"><div class="event-item-title">👑 ${ev.eventName}${statusBadge}</div><div class="event-item-meta">未精算総額: ${ev.totalAmount.toLocaleString()}円 (計${ev.memberCount}人)</div><div class="event-item-price">あなたが<br>${priceText}</div></div>`;
+            select.innerHTML += `<option value="${ev.txId}">${ev.eventName}</option>`;
+          });
         }
-      }).catch(() => alert("データ同期に失敗しました"));
+
+        if(data.joining.length === 0) jList.innerHTML = '<div style="color:#888; padding:10px; font-size:13px;">参加しているイベントはありません。</div>';
+        else {
+          data.joining.forEach(ev => {
+            const priceText = ev.balance >= 0 ? `もらえます<br><span class="price-bold" style="color:#06C755;">+${ev.balance.toLocaleString()}円</span>` : `支払います<br><span class="price-bold" style="color:#df382c;">${ev.balance.toLocaleString()}円</span>`;
+            const statusBadge = ev.hasActive ? `<span style="background:#4285F4; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px; font-weight:bold;">未精算あり</span>` : `<span style="background:#888; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px; font-weight:bold;">精算済</span>`;
+            jList.innerHTML += `<div class="event-item-card" onclick="openDetailModal('${ev.txId}')"><div class="event-item-title">👥 ${ev.eventName}${statusBadge}</div><div class="event-item-meta">主催: ${ev.creator} / 未精算総額: ${ev.totalAmount.toLocaleString()}円</div><div class="event-item-price">あなたが<br>${priceText}</div></div>`;
+            select.innerHTML += `<option value="${ev.txId}">${ev.eventName}</option>`;
+          });
+        }
+
+        document.getElementById("mypage_screen").classList.remove("hidden");
+      } else { alert("GASエラー: " + data.message); }
+    }).catch(err => alert("通信に失敗しました。詳細: " + err));
   }
 
   function openDetailModal(txId) {
     selectedTxIdForModal = txId;
-    fetch(`${GAS_WEB_APP_URL}?action=getEventDetails&txId=${txId}`)
-      .then(res => res.json())
-      .then(res => {
-        if(res.status === 'success') {
-          const ev = res.event;
-          document.getElementById("md_event_name").innerText = ev.eventName;
-          document.getElementById("md_members_list").innerText = ev.members.join(", ");
+    postToGas("getEventDetails", { txId: txId }).then(res => {
+      if(res.status === 'success') {
+        const ev = res.event;
+        document.getElementById("md_event_name").innerText = ev.eventName;
+        document.getElementById("md_members_list").innerText = ev.members.join(", ");
+        
+        const expList = document.getElementById("md_expenses_list");
+        expList.innerHTML = "";
+        let totalUnsettled = 0;
+        let myPaidUnsettled = 0;
+
+        ev.expenses.forEach(x => {
+          const isSettled = x.status === '確認済み';
+          const bg = isSettled ? '#edf2f7' : '#fffaf0';
+          const badge = isSettled ? '<span style="color:#718096; font-weight:bold;">[受領済]</span>' : '<span style="color:#dd6b20; font-weight:bold;">[未精算]</span>';
           
-          const expList = document.getElementById("md_expenses_list");
-          expList.innerHTML = "";
-          let myPaid = 0;
-          ev.expenses.forEach(x => {
-            expList.innerHTML += `<div class="exp-row"><span>・${x.name} (${x.payer})</span><span>${x.amount.toLocaleString()}円</span></div>`;
-            if(x.payer === currentUserName) myPaid += x.amount;
-          });
-
-          const count = ev.members.length;
-          const perPerson = Math.round(ev.totalAmount / count);
-          const bal = myPaid - perPerson;
-          let calcHtml = `・イベント総出費: <b>${ev.totalAmount.toLocaleString()}円</b><br>・割り勘人数: <b>${count}人</b> (1人あたり ${perPerson.toLocaleString()}円)<br>・あなたの支払実績: <b>${myPaid.toLocaleString()}円</b><br>`;
-          if(bal >= 0) {
-            calcHtml += `➔ 差引結果: <b style="color:#06C755; font-size:14px;">+${bal.toLocaleString()}円 もらう権利があります。</b>`;
-          } else {
-            calcHtml += `➔ 差引結果: <b style="color:#df382c; font-size:14px;">${bal.toLocaleString()}円 支払う必要があります。</b>`;
+          let adminBtn = "";
+          if (ev.creator === currentUserName && !isSettled) {
+            adminBtn = `<button style="position:absolute; right:50px; bottom:8px; background:#319795; color:white; border:none; padding:4px 8px; font-size:11px; border-radius:4px; cursor:pointer;" onclick="clickItemStatus('${x.id}','確認済み')">✓ 受領確認</button>`;
           }
-          document.getElementById("md_calc_detail").innerHTML = calcHtml;
-
-          if(ev.creator === currentUserName && ev.status !== '完了') {
-            document.getElementById("md_admin_controls").classList.remove("hidden");
-          } else {
-            document.getElementById("md_admin_controls").classList.add("hidden");
+          let delBtn = "";
+          if (ev.creator === currentUserName || x.payer === currentUserName) {
+            delBtn = `<button style="position:absolute; right:8px; bottom:8px; background:#e53e3e; color:white; border:none; padding:4px 6px; font-size:11px; border-radius:4px; cursor:pointer;" onclick="clickItemStatus('${x.id}','削除')">削除</button>`;
           }
 
-          gEventData = { title: `【精算期日】${ev.eventName}`, startRaw: ev.deadline };
-          document.getElementById("detail_modal").classList.remove("hidden");
+          expList.innerHTML += `
+            <div class="exp-row-card" style="background:${bg};">
+              <div><b>${x.name}</b> (${x.payer} 支払)</div>
+              <div style="font-size:14px; font-weight:bold; margin:3px 0;">${x.amount.toLocaleString()}円</div>
+              <div style="color:#718096; font-size:11px;">期日: ${formatDateTime(x.deadline)} ${badge}</div>
+              ${adminBtn} ${delBtn}
+            </div>`;
+
+          if (!isSettled) {
+            totalUnsettled += x.amount;
+            if (x.payer === currentUserName) myPaidUnsettled += x.amount;
+          }
+        });
+
+        if(expList.innerHTML === "") expList.innerHTML = '<div style="color:#888; font-size:12px;">登録された立替項目はありません。</div>';
+
+        const count = ev.members.length;
+        const perPerson = Math.round(totalUnsettled / count);
+        const bal = myPaidUnsettled - perPerson;
+        
+        let calcHtml = `・未精算の総出費: <b>${totalUnsettled.toLocaleString()}円</b><br>・割り勘人数: <b>${count}人</b> (1人あたり ${perPerson.toLocaleString()}円)<br>・あなたの支払実績: <b>${myPaidUnsettled.toLocaleString()}円</b><br>`;
+        if(bal >= 0) {
+          calcHtml += `➔ 差引結果: <b style="color:#06C755; font-size:15px;">+${bal.toLocaleString()}円 もらえます</b>`;
+        } else {
+          calcHtml += `➔ 差引結果: <b style="color:#df382c; font-size:15px;">${Math.abs(bal).toLocaleString()}円 支払います</b>`;
         }
-      });
+        document.getElementById("md_calc_detail").innerHTML = calcHtml;
+
+        document.getElementById("detail_modal").classList.remove("hidden");
+      } else { alert(res.message); }
+    });
   }
 
   function closeDetailModal() { document.getElementById("detail_modal").classList.add("hidden"); }
 
-  // 👑 更新処理をGET通信に一本化し、確実にDB反映
-  function clickUpdateStatus(targetStatus) {
-    if(!confirm(`この精算を「${targetStatus}」に更新しますか？`)) return;
+  // 項目ごとの「受領確認」または「削除」の処理
+  function clickItemStatus(expId, targetStatus) {
+    if(!confirm(`この項目を「${targetStatus}」にしますか？`)) return;
     closeDetailModal();
-    document.getElementById("mypage_screen").classList.add("hidden");
-    document.getElementById("skeleton").classList.remove("hidden");
-
-    fetch(`${GAS_WEB_APP_URL}?action=updateStatus&txId=${selectedTxIdForModal}&status=${encodeURIComponent(targetStatus)}`)
-      .then(() => { loadMyPage(); });
+    postToGas("updateItemStatus", { expId: expId, status: targetStatus }).then(() => {
+      loadMyPage();
+    });
   }
 
-  // ➕ 出費追加処理をGET通信に一本化
-  function clickQuickAddExpense() {
-    const item = prompt("何を買いましたか？ (例: 飲み物代、ガソリン代)");
-    if(!item) return;
-    const price = prompt("いくら払いましたか？ (数字のみ)");
-    if(!price || isNaN(price)) return;
+  function openQuickAddModal() {
+    document.getElementById("qa_name").value = "";
+    document.getElementById("qa_amount").value = "";
+    document.getElementById("qa_deadline").value = "";
+    document.getElementById("quick_add_modal").classList.remove("hidden");
+  }
+  function closeQuickAddModal() { document.getElementById("quick_add_modal").classList.add("hidden"); }
 
+  function submitQuickAddExpense() {
+    const name = document.getElementById("qa_name").value.trim();
+    const amt = document.getElementById("qa_amount").value;
+    const dead = document.getElementById("qa_deadline").value;
+    if(!name || !amt || !dead) { alert("すべての項目を入力してください。"); return; }
+
+    closeQuickAddModal();
     closeDetailModal();
-    document.getElementById("mypage_screen").classList.add("hidden");
-    document.getElementById("skeleton").classList.remove("hidden");
 
-    fetch(`${GAS_WEB_APP_URL}?action=addExpense&txId=${selectedTxIdForModal}&expenseName=${encodeURIComponent(item)}&amount=${price}&creator=${encodeURIComponent(currentUserName)}`)
-      .then(() => { loadMyPage(); });
+    postToGas("addExpense", { txId: selectedTxIdForModal, expenseName: name, amount: amt, deadline: dead, creator: currentUserName }).then(() => {
+      const evName = document.getElementById("md_event_name").innerText;
+      
+      // LINEグループに「新たな立替が追加されました」と通知を配信
+      liff.shareTargetPicker([{
+        type: "flex", altText: `【立替追加】${evName}に新たな項目`,
+        contents: {
+          type: "bubble",
+          body: {
+            type: "box", layout: "vertical",
+            contents: [
+              { type: "text", text: `📢 立替が追加されました`, weight: "bold", size: "md", color: "#06C755" },
+              { type: "text", text: `イベント: ${evName}`, size: "sm", margin: "xs", color: "#666" },
+              { type: "text", text: `項目: ${name}`, size: "md", margin: "md", weight: "bold" },
+              { type: "text", text: `金額: ${Number(amt).toLocaleString()}円`, size: "md", color: "#df382c", weight: "bold" },
+              { type: "text", text: `期日: ${formatDateTime(dead)}まで`, size: "xs", margin: "xs", color: "#888" }
+            ]
+          },
+          footer: {
+            type: "box", layout: "horizontal",
+            contents: [{ type: "button", style: "primary", color: "#007aff", action: { type: "uri", label: "👀 新たな立替を確認する", uri: `https://liff.line.me/${LIFF_ID}` } }]
+          }
+        }
+      }]).finally(() => { loadMyPage(); });
+    });
   }
 
   function loadMemberJoinPage(txId) {
-    fetch(`${GAS_WEB_APP_URL}?action=getEventDetails&txId=${txId}`)
-      .then(res => res.json())
-      .then(res => {
-        if (res.status === 'success') {
-          const ev = res.event;
-          document.getElementById("join_creator").innerText = ev.creator;
-          document.getElementById("join_event_name").innerText = ev.eventName;
-          document.getElementById("join_amount").innerText = ev.totalAmount.toLocaleString() + "円";
-          document.getElementById("join_deadline").innerText = formatDateTime(ev.deadline);
-          gEventData = { title: `【精算期日】${ev.eventName}`, startRaw: ev.deadline };
-
-          document.getElementById("skeleton").classList.add("hidden");
-          document.getElementById("member_join_page").classList.remove("hidden");
-        } else { alert("終了したか存在しないイベントです"); liff.closeWindow(); }
-      });
+    postToGas("getEventDetails", { txId: txId }).then(res => {
+      if (res.status === 'success') {
+        const ev = res.event;
+        document.getElementById("join_creator").innerText = ev.creator;
+        document.getElementById("join_event_name").innerText = ev.eventName;
+        document.getElementById("member_join_page").classList.remove("hidden");
+      } else { alert("エラー: " + res.message); loadMyPage(); }
+    }).catch(() => loadMyPage());
   }
 
-  // 🚀 フォーム送信（GETリクエスト化でCORSエラー完全消滅）
   function submitForm() {
     const mode = document.querySelector('input[name="event_type"]:checked').value;
+    const expName = document.getElementById("expense_name").value.trim();
     const amount = document.getElementById("amount").value;
-    const reqStartRaw = document.getElementById("request_start").value;
     const deadlineRaw = document.getElementById("deadline").value;
 
-    if (!amount || !reqStartRaw || !deadlineRaw) { alert("未入力の項目があります。"); return; }
-
+    if (!expName || !amount || !deadlineRaw) { alert("未入力の項目があります。"); return; }
     document.getElementById("app").classList.add("hidden");
-    document.getElementById("skeleton").classList.remove("hidden");
 
     if (mode === "新規") {
       const eventName = document.getElementById("event_name").value.trim();
-      if (!eventName) { alert("イベント名を入力してください。"); document.getElementById("skeleton").classList.add("hidden"); document.getElementById("app").classList.remove("hidden"); return; }
+      if (!eventName) { alert("イベント名を入力してください。"); document.getElementById("app").classList.remove("hidden"); return; }
       const generatedTxId = "TX" + Date.now();
 
-      const url = `${GAS_WEB_APP_URL}?action=createNewEvent&txId=${generatedTxId}&eventName=${encodeURIComponent(eventName)}&amount=${amount}&requestStart=${encodeURIComponent(reqStartRaw)}&deadline=${encodeURIComponent(deadlineRaw)}&creator=${encodeURIComponent(currentUserName)}`;
-      
-      fetch(url).then(r => r.json()).then(res => {
+      postToGas("createNewEvent", { txId: generatedTxId, eventName: eventName, expenseName: expName, amount: amount, deadline: deadlineRaw, creator: currentUserName }).then(() => {
         liff.shareTargetPicker([{
           type: "flex", altText: `【招待】${eventName}の精算グループ`,
           contents: {
@@ -386,6 +452,7 @@
               contents: [
                 { type: "text", text: "📢 精算グループへの招待", weight: "bold", size: "lg", color: "#06C755" },
                 { type: "text", text: `イベント: ${eventName}`, size: "md", margin: "md", weight: "bold" },
+                { type: "text", text: `初期項目: ${expName} (${Number(amount).toLocaleString()}円)`, size: "sm", color: "#555", margin: "xs" },
                 { type: "text", text: "この精算グループに参加しますか？", size: "sm", margin: "sm", wrap: true }
               ]
             },
@@ -394,52 +461,61 @@
               contents: [{ type: "button", style: "primary", color: "#06C755", action: { type: "uri", label: "⭕ 参加する", uri: `https://liff.line.me/${LIFF_ID}?action=join&txId=${generatedTxId}` } }]
             }
           }
-        }]).then(() => {
-          showSuccessPage(eventName, amount, reqStartRaw, deadlineRaw);
-        }).catch(() => { backToMyPageFromDone(); });
+        }]).then(() => { showSuccessPage(eventName, expName, amount, deadlineRaw); })
+        .catch(() => { backToMyPageFromDone(); });
       });
 
     } else {
       const selectEl = document.getElementById("select_event");
       const targetTxId = selectEl.value;
       const eventName = selectEl.options[selectEl.selectedIndex].text;
-      if (!targetTxId) { alert("イベントを選択してください。"); return; }
+      if (!targetTxId) { alert("イベントを選択してください。"); document.getElementById("app").classList.remove("hidden"); return; }
 
-      const expItemName = prompt("今回追加する出費の品目名を入力してください") || "追加出費分";
-      const url = `${GAS_WEB_APP_URL}?action=addExpense&txId=${targetTxId}&expenseName=${encodeURIComponent(expItemName)}&amount=${amount}&creator=${encodeURIComponent(currentUserName)}`;
-
-      fetch(url).then(() => {
-        showSuccessPage(eventName, amount, reqStartRaw, deadlineRaw);
+      postToGas("addExpense", { txId: targetTxId, expenseName: expName, amount: amount, deadline: deadlineRaw, creator: currentUserName }).then(() => {
+        liff.shareTargetPicker([{
+          type: "flex", altText: `【立替追加】${eventName}に新たな項目`,
+          contents: {
+            type: "bubble",
+            body: {
+              type: "box", layout: "vertical",
+              contents: [
+                { type: "text", text: `📢 立替が追加されました`, weight: "bold", size: "md", color: "#06C755" },
+                { type: "text", text: `イベント: ${eventName}`, size: "sm", margin: "xs", color: "#666" },
+                { type: "text", text: `項目: ${expName}`, size: "md", margin: "md", weight: "bold" },
+                { type: "text", text: `金額: ${Number(amount).toLocaleString()}円`, size: "md", color: "#df382c", weight: "bold" }
+              ]
+            },
+            footer: {
+              type: "box", layout: "horizontal",
+              contents: [{ type: "button", style: "primary", color: "#007aff", action: { type: "uri", label: "👀 新たな立替を確認する", uri: `https://liff.line.me/${LIFF_ID}` } }]
+            }
+          }
+        }]).then(() => { showSuccessPage(eventName, expName, amount, deadlineRaw); })
+        .catch(() => { backToMyPageFromDone(); });
       });
     }
   }
 
-  function showSuccessPage(name, amt, start, dead) {
+  function showSuccessPage(name, expName, amt, dead) {
     document.getElementById("res_event").innerText = name;
-    document.getElementById("res_amount").innerText = Number(amt).toLocaleString() + "円";
-    gEventData = { title: `【精算期日】${name}`, startRaw: dead };
+    document.getElementById("res_amount").innerText = `${expName} / ${Number(amt).toLocaleString()}円`;
+    gEventData = { title: `【精算期日】${name}(${expName})`, startRaw: dead };
     document.getElementById("modal_gcal").href = generateGoogleCalendarUrl(gEventData.title, dead);
-    document.getElementById("skeleton").classList.add("hidden");
     document.getElementById("success_page").classList.remove("hidden");
   }
 
   function processMemberResponse(type) {
     if (type === 'decline') { liff.closeWindow(); return; }
     document.getElementById("member_join_page").classList.add("hidden");
-    document.getElementById("skeleton").classList.remove("hidden");
 
-    fetch(`${GAS_WEB_APP_URL}?action=joinEvent&txId=${paramTxId}&userName=${encodeURIComponent(currentUserName)}`)
-      .then(() => {
-        document.getElementById("modal_gcal").href = generateGoogleCalendarUrl(gEventData.title, gEventData.startRaw);
-        document.getElementById("skeleton").classList.add("hidden");
-        document.getElementById("member_success_page").classList.remove("hidden");
-      });
+    postToGas("joinEvent", { txId: paramTxId, userName: currentUserName }).then(() => {
+      document.getElementById("member_success_page").classList.remove("hidden");
+    });
   }
 
   function backToMyPageFromDone() {
     document.getElementById("success_page").classList.add("hidden");
     document.getElementById("member_success_page").classList.add("hidden");
-    document.getElementById("skeleton").classList.remove("hidden");
     const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
     window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
     loadMyPage();
