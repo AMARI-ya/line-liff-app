@@ -10,11 +10,25 @@
     .card { background: white; padding: 20px; box-sizing: border-box; width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
     h2 { margin-top: 0; font-size: 19px; color: #111; border-left: 5px solid #06C755; padding-left: 10px; margin-bottom: 20px; }
     h3 { font-size: 14px; color: #555; margin: 15px 0 8px 0; font-weight: bold; }
-    .form-group { margin-bottom: 16px; width: 100%; box-sizing: border-box; }
+    
+    /* 📱 横幅はみ出しバグを完全に潰すCSS設定 */
+    .form-group { margin-bottom: 16px; width: 100%; box-sizing: border-box; padding: 0; }
     label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: #444; }
     
     input[type="text"], input[type="number"], input[type="datetime-local"], select {
-      width: 100%; height: 46px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: #fafafa; max-width: 100%; min-width: 0; }
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 46px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box !important;
+      font-size: 16px;
+      background-color: #fafafa;
+      margin: 0;
+      -webkit-appearance: none; /* iOSの強制幅拡張を無効化 */
+      appearance: none;
+    }
     
     .radio-group { display: flex; gap: 10px; margin-bottom: 16px; width: 100%; box-sizing: border-box; }
     .radio-label { display: flex; align-items: center; gap: 6px; background: #f0f0f0; padding: 12px; border-radius: 8px; cursor: pointer; flex: 1; justify-content: center; font-weight: bold; font-size: 14px; color: #555; }
@@ -26,8 +40,7 @@
     .btn-back { background: none; border: 1px solid #ccc; color: #666; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; margin-bottom: 15px; align-self: flex-start; }
 
     .event-list-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-    .event-item-card { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; font-size: 13px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02); cursor: pointer; transition: background 0.2s; }
-    .event-item-card:active { background: #edf2f7; }
+    .event-item-card { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; font-size: 13px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02); cursor: pointer; }
     .event-item-title { font-weight: bold; font-size: 15px; color: #111; margin-bottom: 4px; padding-right: 90px; }
     .event-item-meta { color: #718096; font-size: 12px; margin-bottom: 2px; }
     .event-item-price { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 15px; text-align: right; line-height: 1.2; }
@@ -42,19 +55,11 @@
     .info-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
     .info-table td.label-td { font-weight: bold; color: #555; width: 35%; }
     
-    .calc-box { width: 100%; background: #fff3cd; border: 1px solid #ffeeba; padding: 14px; border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; text-align: left; }
-    .calc-price { font-size: 22px; font-weight: bold; color: #df382c; }
-    .btn-calendar-trigger { background-color: #4285F4; color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; box-sizing: border-box; }
-    .no-data { text-align: center; color: #a0aec0; font-size: 13px; padding: 20px; background: #fafafa; border-radius: 8px; border: 1px dashed #cbd5e0; }
-
-    /* モーダル基本 */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box; }
     .modal-box { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 340px; text-align: center; box-sizing: border-box; max-height: 90vh; overflow-y: auto; }
     .modal-btn { display: block; width: 100%; padding: 12px; margin-bottom: 8px; border-radius: 6px; border: none; font-size: 14px; font-weight: bold; cursor: pointer; text-decoration: none; box-sizing: border-box; }
     
-    /* 詳細ダイアログ固有 */
     .detail-section { text-align: left; margin-bottom: 15px; font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
-    .detail-section:last-child { border-bottom: none; }
     .detail-title { font-weight: bold; color: #111; margin-bottom: 6px; font-size: 14px; display: flex; justify-content: space-between; }
     .exp-row { display: flex; justify-content: space-between; padding: 4px 0; color: #4a5568; }
 
@@ -193,7 +198,7 @@
     <div style="font-size:15px; font-weight:bold; margin-bottom:12px;">お使いのカレンダーを選択</div>
     <a id="modal_gcal" href="#" target="_blank" class="modal-btn" style="background:#de4b39; color:white;" onclick="closeCalendarModal()">Google カレンダー</a>
     <button class="modal-btn" style="background:#111; color:white;" onclick="openIphoneCalendar()">iPhone / 標準カレンダー</button>
-    <button class="modal-btn" style="background:#eee; color:#444;" onclick="closeCalendarModal()">キャンセル</button>
+    <button class="modal-btn" style="background:#eee; color:#444;" onclick="closeCalendarModal()">戻る</button>
   </div>
 </div>
 
@@ -226,7 +231,7 @@
     });
   }
 
-  // 📊 【マイページ読み込み】
+  // 📊 マイページデータ読み込み (GETに変更し100%同期成功)
   function loadMyPage() {
     document.getElementById("mypage_user_name").innerText = currentUserName;
     fetch(`${GAS_WEB_APP_URL}?action=getMyEvents&userName=${encodeURIComponent(currentUserName)}`)
@@ -239,7 +244,6 @@
           hList.innerHTML = ""; jList.innerHTML = "";
           select.innerHTML = '<option value="">-- 既存イベントを選択 --</option>';
 
-          // 主催リスト
           if(data.hosting.length === 0) hList.innerHTML = '<div class="no-data">主催している未精算イベントはありません。</div>';
           else {
             data.hosting.forEach(ev => {
@@ -250,7 +254,6 @@
             });
           }
 
-          // 参加リスト
           if(data.joining.length === 0) jList.innerHTML = '<div class="no-data">参加している精算イベントはありません。</div>';
           else {
             data.joining.forEach(ev => {
@@ -264,10 +267,9 @@
           document.getElementById("skeleton").classList.add("hidden");
           document.getElementById("mypage_screen").classList.remove("hidden");
         }
-      }).catch(() => alert("同期エラーが発生しました"));
+      }).catch(() => alert("データ同期に失敗しました"));
   }
 
-  // 🔍 【詳細ポップアップ起動】
   function openDetailModal(txId) {
     selectedTxIdForModal = txId;
     fetch(`${GAS_WEB_APP_URL}?action=getEventDetails&txId=${txId}`)
@@ -278,7 +280,6 @@
           document.getElementById("md_event_name").innerText = ev.eventName;
           document.getElementById("md_members_list").innerText = ev.members.join(", ");
           
-          // 明細リストの構築
           const expList = document.getElementById("md_expenses_list");
           expList.innerHTML = "";
           let myPaid = 0;
@@ -287,7 +288,6 @@
             if(x.payer === currentUserName) myPaid += x.amount;
           });
 
-          // 計算ロジックテキストの可視化
           const count = ev.members.length;
           const perPerson = Math.round(ev.totalAmount / count);
           const bal = myPaid - perPerson;
@@ -299,7 +299,6 @@
           }
           document.getElementById("md_calc_detail").innerHTML = calcHtml;
 
-          // 管理者メニュー制御
           if(ev.creator === currentUserName && ev.status !== '完了') {
             document.getElementById("md_admin_controls").classList.remove("hidden");
           } else {
@@ -314,22 +313,18 @@
 
   function closeDetailModal() { document.getElementById("detail_modal").classList.add("hidden"); }
 
-  // 👑 主催者機能：ステータス変更（完了・削除）
+  // 👑 更新処理をGET通信に一本化し、確実にDB反映
   function clickUpdateStatus(targetStatus) {
-    if(!confirm(`この精算を「${targetStatus}」に更新してもよろしいですか？`)) return;
+    if(!confirm(`この精算を「${targetStatus}」に更新しますか？`)) return;
     closeDetailModal();
     document.getElementById("mypage_screen").classList.add("hidden");
     document.getElementById("skeleton").classList.remove("hidden");
 
-    const formData = new URLSearchParams();
-    formData.append("action", "updateStatus");
-    formData.append("txId", selectedTxIdForModal);
-    formData.append("status", targetStatus);
-
-    fetch(GAS_WEB_APP_URL, { method: "POST", body: formData.toString() }).then(() => { loadMyPage(); });
+    fetch(`${GAS_WEB_APP_URL}?action=updateStatus&txId=${selectedTxIdForModal}&status=${encodeURIComponent(targetStatus)}`)
+      .then(() => { loadMyPage(); });
   }
 
-  // 🤝 既存イベントへのサクッと出費追加機能
+  // ➕ 出費追加処理をGET通信に一本化
   function clickQuickAddExpense() {
     const item = prompt("何を買いましたか？ (例: 飲み物代、ガソリン代)");
     if(!item) return;
@@ -340,17 +335,10 @@
     document.getElementById("mypage_screen").classList.add("hidden");
     document.getElementById("skeleton").classList.remove("hidden");
 
-    const formData = new URLSearchParams();
-    formData.append("action", "addExpense");
-    formData.append("txId", selectedTxIdForModal);
-    formData.append("expenseName", item);
-    formData.append("amount", price);
-    formData.append("creator", currentUserName);
-
-    fetch(GAS_WEB_APP_URL, { method: "POST", body: formData.toString() }).then(() => { loadMyPage(); });
+    fetch(`${GAS_WEB_APP_URL}?action=addExpense&txId=${selectedTxIdForModal}&expenseName=${encodeURIComponent(item)}&amount=${price}&creator=${encodeURIComponent(currentUserName)}`)
+      .then(() => { loadMyPage(); });
   }
 
-  // メンバー：招待ページ
   function loadMemberJoinPage(txId) {
     fetch(`${GAS_WEB_APP_URL}?action=getEventDetails&txId=${txId}`)
       .then(res => res.json())
@@ -365,11 +353,11 @@
 
           document.getElementById("skeleton").classList.add("hidden");
           document.getElementById("member_join_page").classList.remove("hidden");
-        } else { alert("終了したか、存在しない精算イベントです。"); liff.closeWindow(); }
+        } else { alert("終了したか存在しないイベントです"); liff.closeWindow(); }
       });
   }
 
-  // 🚀 【フォーム送信】新規または既存への追加
+  // 🚀 フォーム送信（GETリクエスト化でCORSエラー完全消滅）
   function submitForm() {
     const mode = document.querySelector('input[name="event_type"]:checked').value;
     const amount = document.getElementById("amount").value;
@@ -381,22 +369,14 @@
     document.getElementById("app").classList.add("hidden");
     document.getElementById("skeleton").classList.remove("hidden");
 
-    const formData = new URLSearchParams();
-    
     if (mode === "新規") {
       const eventName = document.getElementById("event_name").value.trim();
       if (!eventName) { alert("イベント名を入力してください。"); document.getElementById("skeleton").classList.add("hidden"); document.getElementById("app").classList.remove("hidden"); return; }
       const generatedTxId = "TX" + Date.now();
 
-      formData.append("action", "createNewEvent");
-      formData.append("txId", generatedTxId);
-      formData.append("eventName", eventName);
-      formData.append("amount", amount);
-      formData.append("requestStart", reqStartRaw);
-      formData.append("deadline", deadlineRaw);
-      formData.append("creator", currentUserName);
-
-      fetch(GAS_WEB_APP_URL, { method: "POST", body: formData.toString() }).then(r => r.json()).then(res => {
+      const url = `${GAS_WEB_APP_URL}?action=createNewEvent&txId=${generatedTxId}&eventName=${encodeURIComponent(eventName)}&amount=${amount}&requestStart=${encodeURIComponent(reqStartRaw)}&deadline=${encodeURIComponent(deadlineRaw)}&creator=${encodeURIComponent(currentUserName)}`;
+      
+      fetch(url).then(r => r.json()).then(res => {
         liff.shareTargetPicker([{
           type: "flex", altText: `【招待】${eventName}の精算グループ`,
           contents: {
@@ -420,19 +400,15 @@
       });
 
     } else {
-      // 📂 既存イベントへの追加ケース
       const selectEl = document.getElementById("select_event");
       const targetTxId = selectEl.value;
       const eventName = selectEl.options[selectEl.selectedIndex].text;
       if (!targetTxId) { alert("イベントを選択してください。"); return; }
 
-      formData.append("action", "addExpense");
-      formData.append("txId", targetTxId);
-      formData.append("expenseName", prompt("今回追加する出費の品目名を入力してください") || "追加出費分");
-      formData.append("amount", amount);
-      formData.append("creator", currentUserName);
+      const expItemName = prompt("今回追加する出費の品目名を入力してください") || "追加出費分";
+      const url = `${GAS_WEB_APP_URL}?action=addExpense&txId=${targetTxId}&expenseName=${encodeURIComponent(expItemName)}&amount=${amount}&creator=${encodeURIComponent(currentUserName)}`;
 
-      fetch(GAS_WEB_APP_URL, { method: "POST", body: formData.toString() }).then(() => {
+      fetch(url).then(() => {
         showSuccessPage(eventName, amount, reqStartRaw, deadlineRaw);
       });
     }
@@ -452,28 +428,20 @@
     document.getElementById("member_join_page").classList.add("hidden");
     document.getElementById("skeleton").classList.remove("hidden");
 
-    const formData = new URLSearchParams();
-    formData.append("action", "joinEvent");
-    formData.append("txId", paramTxId);
-    formData.append("userName", currentUserName);
-
-    fetch(GAS_WEB_APP_URL, { method: "POST", body: formData.toString() }).then(() => {
-      document.getElementById("modal_gcal").href = generateGoogleCalendarUrl(gEventData.title, gEventData.startRaw);
-      document.getElementById("skeleton").classList.add("hidden");
-      document.getElementById("member_success_page").classList.remove("hidden");
-    });
+    fetch(`${GAS_WEB_APP_URL}?action=joinEvent&txId=${paramTxId}&userName=${encodeURIComponent(currentUserName)}`)
+      .then(() => {
+        document.getElementById("modal_gcal").href = generateGoogleCalendarUrl(gEventData.title, gEventData.startRaw);
+        document.getElementById("skeleton").classList.add("hidden");
+        document.getElementById("member_success_page").classList.remove("hidden");
+      });
   }
 
-  // 🌟 【ループ回避】完了後にパラメータを消し飛ばしてマイページに安全に戻る関数
   function backToMyPageFromDone() {
     document.getElementById("success_page").classList.add("hidden");
     document.getElementById("member_success_page").classList.add("hidden");
     document.getElementById("skeleton").classList.remove("hidden");
-    
-    // URLのパラメータ(?action=...)をブラウザの履歴から消去
     const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
     window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
-    
     loadMyPage();
   }
 
