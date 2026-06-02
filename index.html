@@ -8,26 +8,18 @@
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; min-height: 100vh; box-sizing: border-box; }
     .card { background: white; padding: 20px; box-sizing: border-box; width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
-    h2 { margin-top: 0; font-size: 19px; color: #111; border-left: 5px solid #06C755; padding-left: 10px; margin-bottom: 20px; }
+    h2 { margin-top: 0; font-size: 18px; color: #111; border-left: 5px solid #06C755; padding-left: 10px; margin-bottom: 25px; }
     h3 { font-size: 14px; color: #555; margin: 15px 0 8px 0; font-weight: bold; }
     
-    .form-group { margin-bottom: 16px; width: 100%; box-sizing: border-box; }
+    .form-group { margin-bottom: 18px; width: 100%; box-sizing: border-box; }
     label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: #444; }
     .label-bold { font-weight: bold; color: #111; }
     
-    input[type="text"], input[type="number"], input[type="datetime-local"], select {
-      width: 100% !important;
-      height: 46px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-sizing: border-box !important;
-      font-size: 16px;
-      background-color: #fafafa;
-      margin: 0;
+    input[type="text"], input[type="number"], input[type="date"], select {
+      width: 100% !important; height: 46px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box !important; font-size: 16px; background-color: #fafafa; margin: 0;
     }
     
-    .radio-group { display: flex; gap: 10px; margin-bottom: 16px; width: 100%; box-sizing: border-box; }
+    .radio-group { display: flex; gap: 10px; margin-bottom: 18px; width: 100%; box-sizing: border-box; }
     .radio-label { display: flex; align-items: center; gap: 6px; background: #e2e8f0; padding: 12px; border-radius: 8px; cursor: pointer; flex: 1; justify-content: center; font-weight: bold; font-size: 14px; color: #4a5568; }
     input[type="radio"]:checked + .radio-label { background: #06C755; color: white; }
     input[type="radio"] { display: none; }
@@ -37,9 +29,8 @@
     .btn-back { background: none; border: 1px solid #ccc; color: #666; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; margin-bottom: 15px; align-self: flex-start; }
 
     .event-list-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-    .event-item-card { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; font-size: 13px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02); cursor: pointer; }
+    .event-item-card { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; font-size: 13px; position: relative; cursor: pointer; }
     .event-item-title { font-weight: bold; font-size: 15px; color: #111; margin-bottom: 4px; padding-right: 90px; }
-    .event-item-meta { color: #718096; font-size: 12px; margin-bottom: 2px; }
     .event-item-price { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; text-align: right; line-height: 1.3; color:#4a5568; }
     .price-bold { font-weight: bold; font-size: 16px; }
 
@@ -53,12 +44,19 @@
     .info-table td.label-td { font-weight: bold; color: #555; width: 35%; }
     
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; box-sizing: border-box; }
-    .modal-box { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 350px; text-align: center; box-sizing: border-box; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+    .modal-box { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 360px; text-align: center; box-sizing: border-box; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
     .modal-btn { display: block; width: 100%; padding: 11px; margin-bottom: 8px; border-radius: 6px; border: none; font-size: 13px; font-weight: bold; cursor: pointer; text-decoration: none; box-sizing: border-box; text-align: center; }
     
     .detail-section { text-align: left; margin-bottom: 15px; font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
     .detail-title { font-weight: bold; color: #111; margin-bottom: 6px; font-size: 14px; }
-    .exp-row-card { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; margin-bottom: 8px; font-size: 12px; position: relative; }
+    
+    /* ▽ アコーディオン用のスタイル */
+    .exp-accordion-card { background: #fff; border: 1px solid #cbd5e0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; text-align: left; }
+    .exp-header { background: #f7fafc; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-bottom: 1px solid #e2e8f0; }
+    .exp-body { padding: 12px; background: #fff; display: none; border-top: 1px dashed #e2e8f0; }
+    .exp-deadline-text { font-size: 11px; color: #718096; margin-top: 2px; }
+    .member-check-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #edf2f7; font-size: 13px; }
+    .member-check-row:last-child { border-bottom: none; }
     
     .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #06C755; border-radius: 50%; width: 36px; height: 36px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -120,7 +118,7 @@
 
   <div class="form-group">
     <label for="deadline" class="label-bold">Q. この立替項目の精算締め切り期日はいつですか？</label>
-    <input type="datetime-local" id="deadline">
+    <input type="date" id="deadline">
   </div>
 
   <button class="btn-submit" onclick="submitForm()">🚀 メンバーを選んで申請・追加する</button>
@@ -128,8 +126,8 @@
 
 <div id="success_page" class="success-container hidden">
   <div class="success-icon">✓</div>
-  <div class="success-title">申請・追加が完了！</div>
-  <div class="success-text">LINEメンバーに通知メッセージを送信しました。</div>
+  <div class="success-title">処理が完了しました！</div>
+  <div class="success-text" id="success_desc">LINEメンバーに通知メッセージを送信しました。</div>
   <table class="info-table">
     <tr><td class="label-td">イベント</td><td id="res_event">-</td></tr>
     <tr><td class="label-td">項目/金額</td><td id="res_amount">-</td></tr>
@@ -162,17 +160,17 @@
     <h3 style="margin-top:0; font-size:16px; border-bottom:2px solid #06C755; padding-bottom:6px; text-align:left;" id="md_event_name">-</h3>
     
     <div class="detail-section">
-      <div class="detail-title">💰 現在の精算状況（未精算分）</div>
-      <div id="md_calc_detail" style="line-height: 1.6; font-size:13px; color:#111;">-</div>
+      <div class="detail-title">📊 あなたの現在の精算状況</div>
+      <div id="md_calc_detail" style="line-height: 1.5; font-size:13px; color:#111;">-</div>
     </div>
     
     <div class="detail-section">
-      <div class="detail-title">📋 立替項目の一覧・管理</div>
-      <div id="md_expenses_list" style="max-height:220px; overflow-y:auto;"></div>
+      <div class="detail-title">📋 立替項目の一覧 (クリックで ▽ 開閉)</div>
+      <div id="md_expenses_list" style="max-height:280px; overflow-y:auto; padding-right:2px;"></div>
     </div>
     
     <div class="detail-section">
-      <div class="detail-title">👥 参加メンバー</div>
+      <div class="detail-title">👥 全ての参加メンバー</div>
       <div id="md_members_list" style="color:#4a5568;">-</div>
     </div>
 
@@ -183,9 +181,11 @@
 
 <div id="quick_add_modal" class="modal-overlay hidden" style="z-index:1100;">
   <div class="modal-box">
-    <h3 style="margin-top:0;">➕ 新たな立替の追加</h3>
+    <h3 id="qa_title">➕ 新たな立替の追加</h3>
+    <input type="hidden" id="qa_mode" value="add"> <input type="hidden" id="qa_exp_id" value="">
+    
     <div class="form-group" style="text-align:left;">
-      <label class="label-bold">Q. 追加する立替の項目名（区分）</label>
+      <label class="label-bold">Q. 立替の項目名（区分）</label>
       <input type="text" id="qa_name" placeholder="例: お肉代、追加の飲み物">
     </div>
     <div class="form-group" style="text-align:left;">
@@ -194,9 +194,9 @@
     </div>
     <div class="form-group" style="text-align:left;">
       <label class="label-bold">Q. この項目の精算期日</label>
-      <input type="datetime-local" id="qa_deadline">
+      <input type="date" id="qa_deadline">
     </div>
-    <button class="btn-submit" onclick="submitQuickAddExpense()">🚀 追加してグループに通知</button>
+    <button class="btn-submit" id="qa_submit_btn" onclick="submitQuickModal()">🚀 確定する</button>
     <button class="modal-btn" style="background:#eee; color:#333; margin-top:8px;" onclick="closeQuickAddModal()">キャンセル</button>
   </div>
 </div>
@@ -211,15 +211,12 @@
 </div>
 
 <script>
-  // ⚠️ ご自身の情報を正確に設定してください
   const LIFF_ID = "2010226382-7KYbDoOC"; 
   const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3NF7dnj_aC1Js7ZuYMT66OEPCVPfTzM68-2b-eB4DBI_s0CV5TnmNw3ndukzG_nHr/exec"; 
 
   let currentUserName = "ゲスト";
   let gEventData = {}; 
-  let paramTxId = null;
-  let paramAction = null;
-  let selectedTxIdForModal = null;
+  let paramTxId = null; let paramAction = null; let selectedTxIdForModal = null;
 
   function showLoading() { document.getElementById("loading_overlay").classList.remove("hidden"); }
   function hideLoading() { document.getElementById("loading_overlay").classList.add("hidden"); }
@@ -236,9 +233,7 @@
   }
 
   window.onload = function() {
-    paramAction = getQueryParam('action');
-    paramTxId = getQueryParam('txId');
-
+    paramAction = getQueryParam('action'); paramTxId = getQueryParam('txId');
     liff.init({ liffId: LIFF_ID }).then(() => {
       if (!liff.isLoggedIn()) { liff.login(); } else { routeScreen(); }
     }).catch(err => alert("LIFF初期化エラー: " + err));
@@ -253,17 +248,13 @@
     });
   }
 
-  // 🔄 すべての通信を安全な「POST方式」で行う共通関数（DB未反映バグを100%防止）
   function postToGas(actionName, paramsObj) {
     showLoading();
     const formData = new URLSearchParams();
     formData.append("action", actionName);
     for (const key in paramsObj) { formData.append(key, paramsObj[key]); }
-    
     return fetch(GAS_WEB_APP_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: formData.toString()
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: formData.toString()
     }).then(res => res.json()).finally(() => hideLoading());
   }
 
@@ -281,8 +272,8 @@
         else {
           data.hosting.forEach(ev => {
             const priceText = ev.balance >= 0 ? `もらえます<br><span class="price-bold" style="color:#06C755;">+${ev.balance.toLocaleString()}円</span>` : `支払います<br><span class="price-bold" style="color:#df382c;">${ev.balance.toLocaleString()}円</span>`;
-            const statusBadge = ev.hasActive ? `<span style="background:#06C755; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px; font-weight:bold;">回収中</span>` : `<span style="background:#888; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px; font-weight:bold;">精算済</span>`;
-            hList.innerHTML += `<div class="event-item-card" onclick="openDetailModal('${ev.txId}')"><div class="event-item-title">👑 ${ev.eventName}${statusBadge}</div><div class="event-item-meta">未精算総額: ${ev.totalAmount.toLocaleString()}円 (計${ev.memberCount}人)</div><div class="event-item-price">あなたが<br>${priceText}</div></div>`;
+            const badge = ev.hasActive ? `<span style="background:#06C755; color:white; padding:2px 5px; border-radius:4px; font-size:10px; margin-left:6px;">回収中</span>` : `<span style="background:#888; color:white; padding:2px 5px; border-radius:4px; font-size:10px; margin-left:6px;">精算完了</span>`;
+            hList.innerHTML += `<div class="event-item-card" onclick="openDetailModal('${ev.txId}')"><div class="event-item-title">👑 ${ev.eventName}${badge}</div><div class="event-item-price">あなたが<br>${priceText}</div></div>`;
             select.innerHTML += `<option value="${ev.txId}">${ev.eventName}</option>`;
           });
         }
@@ -291,17 +282,17 @@
         else {
           data.joining.forEach(ev => {
             const priceText = ev.balance >= 0 ? `もらえます<br><span class="price-bold" style="color:#06C755;">+${ev.balance.toLocaleString()}円</span>` : `支払います<br><span class="price-bold" style="color:#df382c;">${ev.balance.toLocaleString()}円</span>`;
-            const statusBadge = ev.hasActive ? `<span style="background:#4285F4; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px; font-weight:bold;">未精算あり</span>` : `<span style="background:#888; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px; font-weight:bold;">精算済</span>`;
-            jList.innerHTML += `<div class="event-item-card" onclick="openDetailModal('${ev.txId}')"><div class="event-item-title">👥 ${ev.eventName}${statusBadge}</div><div class="event-item-meta">主催: ${ev.creator} / 未精算総額: ${ev.totalAmount.toLocaleString()}円</div><div class="event-item-price">あなたが<br>${priceText}</div></div>`;
+            const badge = ev.hasActive ? `<span style="background:#4285F4; color:white; padding:2px 5px; border-radius:4px; font-size:10px; margin-left:6px;">未精算あり</span>` : `<span style="background:#888; color:white; padding:2px 5px; border-radius:4px; font-size:10px; margin-left:6px;">精算完了</span>`;
+            jList.innerHTML += `<div class="event-item-card" onclick="openDetailModal('${ev.txId}')"><div class="event-item-title">👥 ${ev.eventName}${badge}</div><div class="event-item-price">あなたが<br>${priceText}</div></div>`;
             select.innerHTML += `<option value="${ev.txId}">${ev.eventName}</option>`;
           });
         }
-
         document.getElementById("mypage_screen").classList.remove("hidden");
-      } else { alert("GASエラー: " + data.message); }
-    }).catch(err => alert("通信に失敗しました。詳細: " + err));
+      }
+    }).catch(err => alert("読み込み失敗: " + err));
   }
 
+  // ▽ アコーディオン開閉ロジック付き詳細画面
   function openDetailModal(txId) {
     selectedTxIdForModal = txId;
     postToGas("getEventDetails", { txId: txId }).then(res => {
@@ -312,68 +303,119 @@
         
         const expList = document.getElementById("md_expenses_list");
         expList.innerHTML = "";
-        let totalUnsettled = 0;
-        let myPaidUnsettled = 0;
+        
+        let totalUnsettledForMe = 0;
+        let myPaidUnsettledForOthers = 0;
+        const count = ev.members.length;
 
         ev.expenses.forEach(x => {
-          const isSettled = x.status === '確認済み';
-          const bg = isSettled ? '#edf2f7' : '#fffaf0';
-          const badge = isSettled ? '<span style="color:#718096; font-weight:bold;">[受領済]</span>' : '<span style="color:#dd6b20; font-weight:bold;">[未精算]</span>';
+          const perPerson = Math.round(x.amount / count);
+          // 全員が受領済み（支払者本人、またはチェック済みに名前がある）か判定
+          const isAllSettled = ev.members.every(m => m === x.payer || x.settledUsers.includes(m));
           
-          let adminBtn = "";
-          if (ev.creator === currentUserName && !isSettled) {
-            adminBtn = `<button style="position:absolute; right:50px; bottom:8px; background:#319795; color:white; border:none; padding:4px 8px; font-size:11px; border-radius:4px; cursor:pointer;" onclick="clickItemStatus('${x.id}','確認済み')">✓ 受領確認</button>`;
+          let memberCheckRowsHtml = "";
+          ev.members.forEach(m => {
+            if (m === x.payer) {
+              memberCheckRowsHtml += `<div class="member-check-row" style="color:#718096;"><span>👤 ${m}</span><span>(支払者本人)</span></div>`;
+            } else {
+              const isChecked = x.settledUsers.includes(m);
+              const disabledAttr = (x.payer === currentUserName) ? "" : "disabled";
+              memberCheckRowsHtml += `
+                <div class="member-check-row">
+                  <span>👤 ${m} (${perPerson.toLocaleString()}円)</span>
+                  <input type="checkbox" style="transform:scale(1.2);" ${isChecked ? "checked" : ""} ${disabledAttr} onchange="toggleUserCheck('${x.id}', '${m}', this.checked)">
+                </div>`;
+            }
+          });
+
+          // 編集・削除ボタン（登録者のみ表示）
+          let editButtonsHtml = "";
+          if (x.payer === currentUserName) {
+            editButtonsHtml = `
+              <div style="margin-top:10px; text-align:right; gap:8px; display:flex; justify-content:flex-end;">
+                <button style="background:#4a5568; color:white; border:none; padding:5px 10px; font-size:11px; border-radius:4px;" onclick="openEditModal('${x.id}','${x.name}',${x.amount},'${x.deadline}')">✏️ 項目を編集</button>
+                <button style="background:#e53e3e; color:white; border:none; padding:5px 10px; font-size:11px; border-radius:4px;" onclick="deleteItem('${x.id}')">削除</button>
+              </div>`;
           }
-          let delBtn = "";
-          if (ev.creator === currentUserName || x.payer === currentUserName) {
-            delBtn = `<button style="position:absolute; right:8px; bottom:8px; background:#e53e3e; color:white; border:none; padding:4px 6px; font-size:11px; border-radius:4px; cursor:pointer;" onclick="clickItemStatus('${x.id}','削除')">削除</button>`;
-          }
+
+          const cardStyle = isAllSettled ? "opacity: 0.6; background: #edf2f7;" : "";
+          const badgeText = isAllSettled ? "<span style='color:#718096;'>[全受領確認済]</span>" : "<span style='color:#dd6b20;'>[未精算あり]</span>";
 
           expList.innerHTML += `
-            <div class="exp-row-card" style="background:${bg};">
-              <div><b>${x.name}</b> (${x.payer} 支払)</div>
-              <div style="font-size:14px; font-weight:bold; margin:3px 0;">${x.amount.toLocaleString()}円</div>
-              <div style="color:#718096; font-size:11px;">期日: ${formatDateTime(x.deadline)} ${badge}</div>
-              ${adminBtn} ${delBtn}
+            <div class="exp-accordion-card" style="${cardStyle}">
+              <div class="exp-header" onclick="toggleAccordion(this)">
+                <div>
+                  <b style="font-size:14px;">${x.name}</b> <span style="font-size:11px; color:#666;">(${x.payer})</span>
+                  <div class="exp-deadline-text">期日: ${x.deadline ? x.deadline.split("T")[0] : "-"} ${badgeText}</div>
+                </div>
+                <div style="text-align:right;">
+                  <span style="font-weight:bold; font-size:14px; color:#111;">${x.amount.toLocaleString()}円</span> ▽
+                </div>
+              </div>
+              <div class="exp-body">
+                ${memberCheckRowsHtml}
+                ${editButtonsHtml}
+              </div>
             </div>`;
 
-          if (!isSettled) {
-            totalUnsettled += x.amount;
-            if (x.payer === currentUserName) myPaidUnsettled += x.amount;
+          // メインの計算処理
+          if (!isAllSettled) {
+            if (x.payer === currentUserName) {
+              ev.members.forEach(m => {
+                if (m !== currentUserName && !x.settledUsers.includes(m)) {
+                  myPaidUnsettledForOthers += perPerson;
+                }
+              });
+            } else {
+              if (ev.members.includes(currentUserName) && !x.settledUsers.includes(currentUserName)) {
+                totalUnsettledForMe += perPerson;
+              }
+            }
           }
         });
 
-        if(expList.innerHTML === "") expList.innerHTML = '<div style="color:#888; font-size:12px;">登録された立替項目はありません。</div>';
+        if(expList.innerHTML === "") expList.innerHTML = '<div style="color:#888; font-size:12px; padding:10px;">登録項目はありません。</div>';
 
-        const count = ev.members.length;
-        const perPerson = Math.round(totalUnsettled / count);
-        const bal = myPaidUnsettled - perPerson;
-        
-        let calcHtml = `・未精算の総出費: <b>${totalUnsettled.toLocaleString()}円</b><br>・割り勘人数: <b>${count}人</b> (1人あたり ${perPerson.toLocaleString()}円)<br>・あなたの支払実績: <b>${myPaidUnsettled.toLocaleString()}円</b><br>`;
+        const bal = myPaidUnsettledForOthers - totalUnsettledForMe;
+        let calcHtml = "";
         if(bal >= 0) {
-          calcHtml += `➔ 差引結果: <b style="color:#06C755; font-size:15px;">+${bal.toLocaleString()}円 もらえます</b>`;
+          calcHtml += `➔ 差引結果: <b style="color:#06C755; font-size:15px;">${bal.toLocaleString()}円 もらえます</b>`;
         } else {
           calcHtml += `➔ 差引結果: <b style="color:#df382c; font-size:15px;">${Math.abs(bal).toLocaleString()}円 支払います</b>`;
         }
         document.getElementById("md_calc_detail").innerHTML = calcHtml;
-
         document.getElementById("detail_modal").classList.remove("hidden");
-      } else { alert(res.message); }
+      }
     });
   }
 
-  function closeDetailModal() { document.getElementById("detail_modal").classList.add("hidden"); }
+  function toggleAccordion(headerEl) {
+    const body = headerEl.nextElementSibling;
+    body.style.display = (body.style.display === "block") ? "none" : "block";
+  }
 
-  // 項目ごとの「受領確認」または「削除」の処理
-  function clickItemStatus(expId, targetStatus) {
-    if(!confirm(`この項目を「${targetStatus}」にしますか？`)) return;
-    closeDetailModal();
-    postToGas("updateItemStatus", { expId: expId, status: targetStatus }).then(() => {
-      loadMyPage();
+  function toggleUserCheck(expId, targetUser, isChecked) {
+    postToGas("updateUserCheck", { expId: expId, targetUser: targetUser, isChecked: isChecked }).then(() => {
+      openDetailModal(selectedTxIdForModal); // 中身を再リロード
     });
+  }
+
+  function closeDetailModal() { document.getElementById("detail_modal").classList.add("hidden"); loadMyPage(); }
+
+  // ✏️ 編集モード起動
+  function openEditModal(id, name, amount, deadline) {
+    document.getElementById("qa_title").innerText = "✏️ 立替項目の編集";
+    document.getElementById("qa_mode").value = "edit";
+    document.getElementById("qa_exp_id").value = id;
+    document.getElementById("qa_name").value = name;
+    document.getElementById("qa_amount").value = amount;
+    document.getElementById("qa_deadline").value = deadline ? deadline.split("T")[0] : "";
+    document.getElementById("quick_add_modal").classList.remove("hidden");
   }
 
   function openQuickAddModal() {
+    document.getElementById("qa_title").innerText = "➕ 新たな立替の追加";
+    document.getElementById("qa_mode").value = "add";
     document.getElementById("qa_name").value = "";
     document.getElementById("qa_amount").value = "";
     document.getElementById("qa_deadline").value = "";
@@ -381,51 +423,36 @@
   }
   function closeQuickAddModal() { document.getElementById("quick_add_modal").classList.add("hidden"); }
 
-  function submitQuickAddExpense() {
-    const name = document.getElementById("qa_name").value.trim();
-    const amt = document.getElementById("qa_amount").value;
-    const dead = document.getElementById("qa_deadline").value;
-    if(!name || !amt || !dead) { alert("すべての項目を入力してください。"); return; }
-
-    closeQuickAddModal();
-    closeDetailModal();
-
-    postToGas("addExpense", { txId: selectedTxIdForModal, expenseName: name, amount: amt, deadline: dead, creator: currentUserName }).then(() => {
-      const evName = document.getElementById("md_event_name").innerText;
-      
-      // LINEグループに「新たな立替が追加されました」と通知を配信
-      liff.shareTargetPicker([{
-        type: "flex", altText: `【立替追加】${evName}に新たな項目`,
-        contents: {
-          type: "bubble",
-          body: {
-            type: "box", layout: "vertical",
-            contents: [
-              { type: "text", text: `📢 立替が追加されました`, weight: "bold", size: "md", color: "#06C755" },
-              { type: "text", text: `イベント: ${evName}`, size: "sm", margin: "xs", color: "#666" },
-              { type: "text", text: `項目: ${name}`, size: "md", margin: "md", weight: "bold" },
-              { type: "text", text: `金額: ${Number(amt).toLocaleString()}円`, size: "md", color: "#df382c", weight: "bold" },
-              { type: "text", text: `期日: ${formatDateTime(dead)}まで`, size: "xs", margin: "xs", color: "#888" }
-            ]
-          },
-          footer: {
-            type: "box", layout: "horizontal",
-            contents: [{ type: "button", style: "primary", color: "#007aff", action: { type: "uri", label: "👀 新たな立替を確認する", uri: `https://liff.line.me/${LIFF_ID}` } }]
-          }
-        }
-      }]).finally(() => { loadMyPage(); });
+  function deleteItem(id) {
+    if(!confirm("この立替項目を完全に削除しますか？")) return;
+    document.getElementById("quick_add_modal").classList.add("hidden");
+    postToGas("deleteExpenseItem", { expId: id }).then(() => {
+      openDetailModal(selectedTxIdForModal);
     });
   }
 
-  function loadMemberJoinPage(txId) {
-    postToGas("getEventDetails", { txId: txId }).then(res => {
-      if (res.status === 'success') {
-        const ev = res.event;
-        document.getElementById("join_creator").innerText = ev.creator;
-        document.getElementById("join_event_name").innerText = ev.eventName;
-        document.getElementById("member_join_page").classList.remove("hidden");
-      } else { alert("エラー: " + res.message); loadMyPage(); }
-    }).catch(() => loadMyPage());
+  function submitQuickModal() {
+    const mode = document.getElementById("qa_mode").value;
+    const name = document.getElementById("qa_name").value.trim();
+    const amt = document.getElementById("qa_amount").value;
+    const dead = document.getElementById("qa_deadline").value;
+    if(!name || !amt || !dead) { alert("全て入力してください。"); return; }
+
+    closeQuickAddModal();
+    const evName = document.getElementById("md_event_name").innerText;
+
+    if (mode === "edit") {
+      const expId = document.getElementById("qa_exp_id").value;
+      postToGas("editExpenseItem", { expId: expId, expenseName: name, amount: amt, deadline: dead }).then(() => {
+        openDetailModal(selectedTxIdForModal);
+      });
+    } else {
+      // 追加モード
+      postToGas("addExpense", { txId: selectedTxIdForModal, expenseName: name, amount: amt, deadline: dead, creator: currentUserName }).then(() => {
+        closeDetailModal();
+        sendLineFlexNotification(evName, name, amt, dead, "add");
+      });
+    }
   }
 
   function submitForm() {
@@ -443,28 +470,8 @@
       const generatedTxId = "TX" + Date.now();
 
       postToGas("createNewEvent", { txId: generatedTxId, eventName: eventName, expenseName: expName, amount: amount, deadline: deadlineRaw, creator: currentUserName }).then(() => {
-        liff.shareTargetPicker([{
-          type: "flex", altText: `【招待】${eventName}の精算グループ`,
-          contents: {
-            type: "bubble",
-            body: {
-              type: "box", layout: "vertical",
-              contents: [
-                { type: "text", text: "📢 精算グループへの招待", weight: "bold", size: "lg", color: "#06C755" },
-                { type: "text", text: `イベント: ${eventName}`, size: "md", margin: "md", weight: "bold" },
-                { type: "text", text: `初期項目: ${expName} (${Number(amount).toLocaleString()}円)`, size: "sm", color: "#555", margin: "xs" },
-                { type: "text", text: "この精算グループに参加しますか？", size: "sm", margin: "sm", wrap: true }
-              ]
-            },
-            footer: {
-              type: "box", layout: "horizontal", spacing: "sm",
-              contents: [{ type: "button", style: "primary", color: "#06C755", action: { type: "uri", label: "⭕ 参加する", uri: `https://liff.line.me/${LIFF_ID}?action=join&txId=${generatedTxId}` } }]
-            }
-          }
-        }]).then(() => { showSuccessPage(eventName, expName, amount, deadlineRaw); })
-        .catch(() => { backToMyPageFromDone(); });
+        sendLineFlexNotification(eventName, expName, amount, deadlineRaw, "new", generatedTxId);
       });
-
     } else {
       const selectEl = document.getElementById("select_event");
       const targetTxId = selectEl.value;
@@ -472,27 +479,64 @@
       if (!targetTxId) { alert("イベントを選択してください。"); document.getElementById("app").classList.remove("hidden"); return; }
 
       postToGas("addExpense", { txId: targetTxId, expenseName: expName, amount: amount, deadline: deadlineRaw, creator: currentUserName }).then(() => {
-        liff.shareTargetPicker([{
-          type: "flex", altText: `【立替追加】${eventName}に新たな項目`,
-          contents: {
-            type: "bubble",
-            body: {
-              type: "box", layout: "vertical",
-              contents: [
-                { type: "text", text: `📢 立替が追加されました`, weight: "bold", size: "md", color: "#06C755" },
-                { type: "text", text: `イベント: ${eventName}`, size: "sm", margin: "xs", color: "#666" },
-                { type: "text", text: `項目: ${expName}`, size: "md", margin: "md", weight: "bold" },
-                { type: "text", text: `金額: ${Number(amount).toLocaleString()}円`, size: "md", color: "#df382c", weight: "bold" }
-              ]
-            },
-            footer: {
-              type: "box", layout: "horizontal",
-              contents: [{ type: "button", style: "primary", color: "#007aff", action: { type: "uri", label: "👀 新たな立替を確認する", uri: `https://liff.line.me/${LIFF_ID}` } }]
-            }
-          }
-        }]).then(() => { showSuccessPage(eventName, expName, amount, deadlineRaw); })
-        .catch(() => { backToMyPageFromDone(); });
+        sendLineFlexNotification(eventName, expName, amount, deadlineRaw, "add");
       });
+    }
+  }
+
+  // ✉️ LINEへのFlex通知配信処理（通知許可が無効でも必ず成功画面へ遷移する安全構造）
+  function sendLineFlexNotification(eventName, expName, amount, deadline, type, optTxId) {
+    let flexContents = {};
+    if (type === "new") {
+      flexContents = {
+        type: "bubble",
+        body: {
+          type: "box", layout: "vertical",
+          contents: [
+            { type: "text", text: "📢 精算グループへの招待", weight: "bold", size: "lg", color: "#06C755" },
+            { type: "text", text: `イベント: ${eventName}`, size: "md", margin: "md", weight: "bold" },
+            { type: "text", text: `初期項目: ${expName} (${Number(amount).toLocaleString()}円)`, size: "sm", color: "#555", margin: "xs" },
+            { type: "text", text: "この精算グループに参加しますか？", size: "sm", margin: "sm", wrap: true }
+          ]
+        },
+        footer: {
+          type: "box", layout: "horizontal",
+          contents: [{ type: "button", style: "primary", color: "#06C755", action: { type: "uri", label: "⭕ 参加する", uri: `https://liff.line.me/${LIFF_ID}?action=join&txId=${optTxId}` } }]
+        }
+      };
+    } else {
+      flexContents = {
+        type: "bubble",
+        body: {
+          type: "box", layout: "vertical",
+          contents: [
+            { type: "text", text: `📢 立替が追加されました`, weight: "bold", size: "md", color: "#06C755" },
+            { type: "text", text: `イベント: ${eventName}`, size: "sm", margin: "xs", color: "#666" },
+            { type: "text", text: `項目: ${expName}`, size: "md", margin: "md", weight: "bold" },
+            { type: "text", text: `金額: ${Number(amount).toLocaleString()}円`, size: "md", color: "#df382c", weight: "bold" }
+          ]
+        },
+        footer: {
+          type: "box", layout: "horizontal",
+          contents: [{ type: "button", style: "primary", color: "#007aff", action: { type: "uri", label: "👀 新たな立替を確認する", uri: `https://liff.line.me/${LIFF_ID}` } }]
+        }
+      };
+    }
+
+    // 友達選択画面（Picker）を起動。失敗してもフォールバックして完了画面を出す
+    if (liff.isApiAvailable('shareTargetPicker')) {
+      liff.shareTargetPicker([{ type: "flex", altText: `【割り勘精算】${eventName}`, contents: flexContents }])
+      .then((res) => {
+        document.getElementById("success_desc").innerText = res ? "LINEメンバーへメッセージを送出しました。" : "メッセージ送信はキャンセルされましたが、登録は完了しています。";
+        showSuccessPage(eventName, expName, amount, deadline);
+      })
+      .catch(() => {
+        document.getElementById("success_desc").innerText = "（LINE設定で通知機能が制限されていますが）スプレッドシートへの登録は正常に完了しました！";
+        showSuccessPage(eventName, expName, amount, deadline);
+      });
+    } else {
+      document.getElementById("success_desc").innerText = "登録が完了しました。";
+      showSuccessPage(eventName, expName, amount, deadline);
     }
   }
 
@@ -504,10 +548,20 @@
     document.getElementById("success_page").classList.remove("hidden");
   }
 
+  function loadMemberJoinPage(txId) {
+    postToGas("getEventDetails", { txId: txId }).then(res => {
+      if (res.status === 'success') {
+        const ev = res.event;
+        document.getElementById("join_creator").innerText = ev.creator;
+        document.getElementById("join_event_name").innerText = ev.eventName;
+        document.getElementById("member_join_page").classList.remove("hidden");
+      } else { alert("エラー: " + res.message); loadMyPage(); }
+    }).catch(() => loadMyPage());
+  }
+
   function processMemberResponse(type) {
     if (type === 'decline') { liff.closeWindow(); return; }
     document.getElementById("member_join_page").classList.add("hidden");
-
     postToGas("joinEvent", { txId: paramTxId, userName: currentUserName }).then(() => {
       document.getElementById("member_success_page").classList.remove("hidden");
     });
@@ -529,16 +583,8 @@
 
   function generateGoogleCalendarUrl(title, startRaw) {
     if(!startRaw) return "#";
-    const digits = startRaw.replace(/[^0-9]/g, '');
-    const cleanStart = digits.substring(0,8) + "T" + digits.substring(8,12) + "00";
-    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${cleanStart}/${cleanStart}&details=LINEアプリから対応をお願いします。`;
-  }
-
-  function formatDateTime(val) {
-    if (!val) return "";
-    const d = new Date(val);
-    if (isNaN(d.getTime())) return val;
-    return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const cleanStart = startRaw.replace(/[^0-9]/g, '');
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${cleanStart}/${cleanStart}&details=アプリから確認してください。`;
   }
 
   function showInputForm() { document.getElementById("mypage_screen").classList.add("hidden"); document.getElementById("app").classList.remove("hidden"); }
