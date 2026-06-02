@@ -11,12 +11,25 @@
     h2 { margin-top: 0; font-size: 18px; color: #111; border-left: 5px solid #06C755; padding-left: 10px; margin-bottom: 25px; }
     h3 { font-size: 14px; color: #555; margin: 15px 0 8px 0; font-weight: bold; }
     
-    .form-group { margin-bottom: 18px; width: 100%; box-sizing: border-box; }
+    .form-group { margin-bottom: 18px; width: 100%; box-sizing: border-box; padding: 0; }
     label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: #444; }
     .label-bold { font-weight: bold; color: #111; }
     
+    /* 枠組みの長さを完全に一致させるための強制リセットCSS */
     input[type="text"], input[type="number"], input[type="date"], select {
-      width: 100% !important; height: 46px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box !important; font-size: 16px; background-color: #fafafa; margin: 0;
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 46px !important;
+      padding: 10px !important;
+      border: 1px solid #ccc !important;
+      border-radius: 8px !important;
+      box-sizing: border-box !important;
+      font-size: 16px !important;
+      background-color: #fafafa !important;
+      margin: 0 !important;
+      -webkit-appearance: none;
+      appearance: none;
     }
     
     .radio-group { display: flex; gap: 10px; margin-bottom: 18px; width: 100%; box-sizing: border-box; }
@@ -50,7 +63,6 @@
     .detail-section { text-align: left; margin-bottom: 15px; font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
     .detail-title { font-weight: bold; color: #111; margin-bottom: 6px; font-size: 14px; }
     
-    /* ▽ アコーディオン用のスタイル */
     .exp-accordion-card { background: #fff; border: 1px solid #cbd5e0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; text-align: left; }
     .exp-header { background: #f7fafc; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-bottom: 1px solid #e2e8f0; }
     .exp-body { padding: 12px; background: #fff; display: none; border-top: 1px dashed #e2e8f0; }
@@ -127,7 +139,7 @@
 <div id="success_page" class="success-container hidden">
   <div class="success-icon">✓</div>
   <div class="success-title">処理が完了しました！</div>
-  <div class="success-text" id="success_desc">LINEメンバーに通知メッセージを送信しました。</div>
+  <div class="success-text" id="success_desc">LINEメンバーにメッセージを送信しました。</div>
   <table class="info-table">
     <tr><td class="label-td">イベント</td><td id="res_event">-</td></tr>
     <tr><td class="label-td">項目/金額</td><td id="res_amount">-</td></tr>
@@ -182,7 +194,8 @@
 <div id="quick_add_modal" class="modal-overlay hidden" style="z-index:1100;">
   <div class="modal-box">
     <h3 id="qa_title">➕ 新たな立替の追加</h3>
-    <input type="hidden" id="qa_mode" value="add"> <input type="hidden" id="qa_exp_id" value="">
+    <input type="hidden" id="qa_mode" value="add">
+    <input type="hidden" id="qa_exp_id" value="">
     
     <div class="form-group" style="text-align:left;">
       <label class="label-bold">Q. 立替の項目名（区分）</label>
@@ -232,8 +245,38 @@
     return null;
   }
 
+  // 【警告消滅処理】GASを踏まずにこのHTML上で直でICSファイルをダウンロードさせるロジック
+  function processIcsDownload() {
+    const title = getQueryParam('title') || "精算期日";
+    const dateStr = getQueryParam('date') || "";
+    const cleanStart = dateStr.replace(/[^0-9]/g, '') + "T000000";
+    
+    document.body.innerHTML = `
+      <div style="font-family:sans-serif; text-align:center; padding:40px 20px; background:#f4f6f9; color:#333; min-height:100vh; box-sizing:border-box;">
+        <div style="background:white; padding:30px 20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-width:400px; margin:0 auto;">
+          <h3 style="margin-top:0;">📅 カレンダー登録</h3>
+          <p style="font-size:14px; color:#555;">カレンダーファイルのダウンロードを開始しました。</p>
+          <button id="dlBtn" style="display:block; width:100%; padding:14px; background:#007aff; color:white; border:none; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">⬇️ 再ダウンロード</button>
+          <p style="font-size:13px; color:#e53e3e; font-weight:bold; margin-top:25px;">【LINEアプリに戻る方法】</p>
+          <p style="font-size:13px; color:#333; margin-top:5px; line-height:1.4;">画面の一番左上にある小さく青い<b>「🔍LINE」</b>という文字を押すか、スマホの履歴（タスク）画面からLINEアプリを選んでお戻りください。</p>
+        </div>
+      </div>`;
+    
+    function dl(){
+      const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${title}\nDTSTART;VALUE=DATE:${cleanStart.substring(0,8)}\nDESCRIPTION:精算締め切り期日です。\nEND:VEVENT\nEND:VCALENDAR`;
+      const blob = new Blob([ics], { type: "text/calendar;charset=utf-8;" });
+      const l = document.createElement("a");
+      l.href = URL.createObjectURL(blob); l.download = "event.ics";
+      document.body.appendChild(l); l.click(); document.body.removeChild(l);
+    }
+    dl();
+    document.getElementById("dlBtn").onclick = dl;
+  }
+
   window.onload = function() {
     paramAction = getQueryParam('action'); paramTxId = getQueryParam('txId');
+    if (paramAction === 'downloadIcs') { processIcsDownload(); return; } // カレンダー警告回避ルート
+
     liff.init({ liffId: LIFF_ID }).then(() => {
       if (!liff.isLoggedIn()) { liff.login(); } else { routeScreen(); }
     }).catch(err => alert("LIFF初期化エラー: " + err));
@@ -292,7 +335,6 @@
     }).catch(err => alert("読み込み失敗: " + err));
   }
 
-  // ▽ アコーディオン開閉ロジック付き詳細画面
   function openDetailModal(txId) {
     selectedTxIdForModal = txId;
     postToGas("getEventDetails", { txId: txId }).then(res => {
@@ -310,8 +352,10 @@
 
         ev.expenses.forEach(x => {
           const perPerson = Math.round(x.amount / count);
-          // 全員が受領済み（支払者本人、またはチェック済みに名前がある）か判定
-          const isAllSettled = ev.members.every(m => m === x.payer || x.settledUsers.includes(m));
+          
+          // 【バグ修正】自分以外の参加メンバーが1人以上入っていて、かつ全員が受領チェックされているときだけ「全受領済」とする
+          const otherMembers = ev.members.filter(m => m !== x.payer);
+          const isAllSettled = otherMembers.length > 0 && otherMembers.every(m => x.settledUsers.includes(m));
           
           let memberCheckRowsHtml = "";
           ev.members.forEach(m => {
@@ -328,7 +372,6 @@
             }
           });
 
-          // 編集・削除ボタン（登録者のみ表示）
           let editButtonsHtml = "";
           if (x.payer === currentUserName) {
             editButtonsHtml = `
@@ -358,7 +401,6 @@
               </div>
             </div>`;
 
-          // メインの計算処理
           if (!isAllSettled) {
             if (x.payer === currentUserName) {
               ev.members.forEach(m => {
@@ -373,6 +415,11 @@
             }
           }
         });
+
+        // 初期状態で参加者が主催者1人のみの場合のアナウンスを表示
+        if (ev.members.length === 1 && ev.members[0] === currentUserName) {
+          expList.innerHTML = `<div style="color:#dd6b20; font-size:12px; padding:10px; background:#fffaf0; border:1px solid #feebc8; border-radius:6px; margin-bottom:10px; line-height:1.4;">⚠️ まだ他のメンバーがグループに参加していません。<br>新規作成時にLINE配信された招待リンク(⭕ 参加する)を、他のメンバーにタップしてもらい、グループへの参加を確定させてください。</div>` + expList.innerHTML;
+        }
 
         if(expList.innerHTML === "") expList.innerHTML = '<div style="color:#888; font-size:12px; padding:10px;">登録項目はありません。</div>';
 
@@ -396,13 +443,12 @@
 
   function toggleUserCheck(expId, targetUser, isChecked) {
     postToGas("updateUserCheck", { expId: expId, targetUser: targetUser, isChecked: isChecked }).then(() => {
-      openDetailModal(selectedTxIdForModal); // 中身を再リロード
+      openDetailModal(selectedTxIdForModal);
     });
   }
 
   function closeDetailModal() { document.getElementById("detail_modal").classList.add("hidden"); loadMyPage(); }
 
-  // ✏️ 編集モード起動
   function openEditModal(id, name, amount, deadline) {
     document.getElementById("qa_title").innerText = "✏️ 立替項目の編集";
     document.getElementById("qa_mode").value = "edit";
@@ -447,7 +493,6 @@
         openDetailModal(selectedTxIdForModal);
       });
     } else {
-      // 追加モード
       postToGas("addExpense", { txId: selectedTxIdForModal, expenseName: name, amount: amt, deadline: dead, creator: currentUserName }).then(() => {
         closeDetailModal();
         sendLineFlexNotification(evName, name, amt, dead, "add");
@@ -484,7 +529,6 @@
     }
   }
 
-  // ✉️ LINEへのFlex通知配信処理（通知許可が無効でも必ず成功画面へ遷移する安全構造）
   function sendLineFlexNotification(eventName, expName, amount, deadline, type, optTxId) {
     let flexContents = {};
     if (type === "new") {
@@ -523,15 +567,15 @@
       };
     }
 
-    // 友達選択画面（Picker）を起動。失敗してもフォールバックして完了画面を出す
+    // ピッカー起動。非同期処理の待機を改善
     if (liff.isApiAvailable('shareTargetPicker')) {
       liff.shareTargetPicker([{ type: "flex", altText: `【割り勘精算】${eventName}`, contents: flexContents }])
       .then((res) => {
-        document.getElementById("success_desc").innerText = res ? "LINEメンバーへメッセージを送出しました。" : "メッセージ送信はキャンセルされましたが、登録は完了しています。";
+        document.getElementById("success_desc").innerText = "LINEメンバーにメッセージを送信しました。";
         showSuccessPage(eventName, expName, amount, deadline);
       })
       .catch(() => {
-        document.getElementById("success_desc").innerText = "（LINE設定で通知機能が制限されていますが）スプレッドシートへの登録は正常に完了しました！";
+        document.getElementById("success_desc").innerText = "登録は完了しました。(LINE設定等によりメッセージ送信はスキップされました)";
         showSuccessPage(eventName, expName, amount, deadline);
       });
     } else {
@@ -575,8 +619,10 @@
     loadMyPage();
   }
 
+  // 【バグ回避】GASを完全に外してGitHub側からダイレクトにICSファイルを生成してダウンロードさせる
   function openIphoneCalendar() {
-    const url = `${GAS_WEB_APP_URL}?action=icsPage&title=${encodeURIComponent(gEventData.title)}&date=${encodeURIComponent(gEventData.startRaw)}`;
+    const currentHtmlUrl = window.location.href.split('?')[0];
+    const url = `${currentHtmlUrl}?action=downloadIcs&title=${encodeURIComponent(gEventData.title)}&date=${encodeURIComponent(gEventData.startRaw)}`;
     liff.openWindow({ url: url, external: true });
     closeCalendarModal();
   }
