@@ -11,25 +11,15 @@
     h2 { margin-top: 0; font-size: 18px; color: #111; border-left: 5px solid #06C755; padding-left: 10px; margin-bottom: 25px; }
     h3 { font-size: 14px; color: #555; margin: 15px 0 8px 0; font-weight: bold; }
     
-    .form-group { margin-bottom: 18px; width: 100%; box-sizing: border-box; padding: 0; }
+    .form-group { margin-bottom: 18px; width: 100%; box-sizing: border-box; }
     label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: #444; }
     .label-bold { font-weight: bold; color: #111; }
     
-    /* 枠組みの長さを完全に一致させるための強制リセットCSS */
     input[type="text"], input[type="number"], input[type="date"], select {
-      display: block !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      height: 46px !important;
-      padding: 10px !important;
-      border: 1px solid #ccc !important;
-      border-radius: 8px !important;
-      box-sizing: border-box !important;
-      font-size: 16px !important;
-      background-color: #fafafa !important;
-      margin: 0 !important;
-      -webkit-appearance: none;
-      appearance: none;
+      display: block !important; width: 100% !important; max-width: 100% !important; height: 46px !important;
+      padding: 10px !important; border: 1px solid #ccc !important; border-radius: 8px !important;
+      box-sizing: border-box !important; font-size: 16px !important; background-color: #fafafa !important;
+      margin: 0 !important; -webkit-appearance: none; appearance: none;
     }
     
     .radio-group { display: flex; gap: 10px; margin-bottom: 18px; width: 100%; box-sizing: border-box; }
@@ -38,12 +28,14 @@
     input[type="radio"] { display: none; }
     
     .btn-submit { background-color: #06C755; color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(6,199,85,0.2); box-sizing: border-box; }
+    .btn-submit:disabled { background-color: #cbd5e0 !important; cursor: not-allowed; box-shadow: none; }
     .btn-decline { background-color: #888; color: white; border: none; width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; box-sizing: border-box; }
+    .btn-decline:disabled { background-color: #cbd5e0 !important; }
     .btn-back { background: none; border: 1px solid #ccc; color: #666; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; margin-bottom: 15px; align-self: flex-start; }
 
     .event-list-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
     .event-item-card { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; font-size: 13px; position: relative; cursor: pointer; }
-    .event-item-title { font-weight: bold; font-size: 15px; color: #111; margin-bottom: 4px; padding-right: 90px; }
+    .event-item-title { font-weight: bold; font-size: 15px; color: #111; margin-bottom: 4px; padding-right: 90px; display: flex; align-items: center; }
     .event-item-price { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; text-align: right; line-height: 1.3; color:#4a5568; }
     .price-bold { font-weight: bold; font-size: 16px; }
 
@@ -80,19 +72,17 @@
 <div id="loading_overlay" class="modal-overlay" style="background: rgba(255,255,255,0.85); z-index: 2000;">
   <div style="text-align: center;">
     <div class="spinner"></div>
-    <div style="font-weight: bold; color: #333; font-size: 14px;">データを読み込み中...</div>
+    <div style="font-weight: bold; color: #333; font-size: 14px;">安全な通信を確立中...</div>
   </div>
 </div>
 
 <div id="mypage_screen" class="card hidden">
   <h2>📊 精算マイページ</h2>
   <div style="font-size:14px; margin-bottom:15px; color:#4a5568;">ユーザー: <span id="mypage_user_name" style="font-weight:bold; color:#111;">-</span></div>
-  
   <button class="btn-submit" style="margin-bottom:20px; background-color:#007aff; box-shadow: 0 4px 12px rgba(0,122,255,0.2);" onclick="showInputForm()">➕ 新しく出費を精算申請する</button>
 
   <h3>👑 あなたが管理・主催</h3>
   <div id="hosting_list" class="event-list-container"></div>
-
   <h3>👥 あなたが参加中</h3>
   <div id="joining_list" class="event-list-container"></div>
 </div>
@@ -133,7 +123,7 @@
     <input type="date" id="deadline">
   </div>
 
-  <button class="btn-submit" onclick="submitForm()">🚀 メンバーを選んで申請・追加する</button>
+  <button class="btn-submit" id="main_submit_btn" onclick="submitForm()">🚀 メンバーを選んで申請・追加する</button>
 </div>
 
 <div id="success_page" class="success-container hidden">
@@ -177,13 +167,13 @@
     </div>
     
     <div class="detail-section">
-      <div class="detail-title">📋 立替項目の一覧 (クリックで ▽ 開閉)</div>
+      <div class="detail-title">📋 立替項目の一覧 (クリックで開閉)</div>
       <div id="md_expenses_list" style="max-height:280px; overflow-y:auto; padding-right:2px;"></div>
     </div>
     
     <div class="detail-section">
       <div class="detail-title">👥 全ての参加メンバー</div>
-      <div id="md_members_list" style="color:#4a5568;">-</div>
+      <div id="md_members_list" style="color:#4a5568; word-break: break-all;">-</div>
     </div>
 
     <button class="modal-btn" style="background:#06C755; color:white;" onclick="openQuickAddModal()">➕ このイベントに出費を追加</button>
@@ -227,6 +217,7 @@
   const LIFF_ID = "2010226382-7KYbDoOC"; 
   const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3NF7dnj_aC1Js7ZuYMT66OEPCVPfTzM68-2b-eB4DBI_s0CV5TnmNw3ndukzG_nHr/exec"; 
 
+  let currentUserId = "";
   let currentUserName = "ゲスト";
   let gEventData = {}; 
   let paramTxId = null; let paramAction = null; let selectedTxIdForModal = null;
@@ -245,37 +236,45 @@
     return null;
   }
 
-  // 【警告消滅処理】GASを踏まずにこのHTML上で直でICSファイルをダウンロードさせるロジック
+  // カレンダーGoogle警告回避のダイレクトダウンロード処理
   function processIcsDownload() {
     const title = getQueryParam('title') || "精算期日";
     const dateStr = getQueryParam('date') || "";
     const cleanStart = dateStr.replace(/[^0-9]/g, '') + "T000000";
     
-    document.body.innerHTML = `
-      <div style="font-family:sans-serif; text-align:center; padding:40px 20px; background:#f4f6f9; color:#333; min-height:100vh; box-sizing:border-box;">
-        <div style="background:white; padding:30px 20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-width:400px; margin:0 auto;">
-          <h3 style="margin-top:0;">📅 カレンダー登録</h3>
-          <p style="font-size:14px; color:#555;">カレンダーファイルのダウンロードを開始しました。</p>
-          <button id="dlBtn" style="display:block; width:100%; padding:14px; background:#007aff; color:white; border:none; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">⬇️ 再ダウンロード</button>
-          <p style="font-size:13px; color:#e53e3e; font-weight:bold; margin-top:25px;">【LINEアプリに戻る方法】</p>
-          <p style="font-size:13px; color:#333; margin-top:5px; line-height:1.4;">画面の一番左上にある小さく青い<b>「🔍LINE」</b>という文字を押すか、スマホの履歴（タスク）画面からLINEアプリを選んでお戻りください。</p>
-        </div>
-      </div>`;
+    document.body.innerHTML = "";
+    const container = document.createElement("div");
+    container.style.cssText = "font-family:sans-serif; text-align:center; padding:40px 20px; background:#f4f6f9; color:#333; min-height:100vh; box-sizing:border-box;";
+    
+    const box = document.createElement("div");
+    box.style.cssText = "background:white; padding:30px 20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-width:400px; margin:0 auto;";
+    
+    const h3 = document.createElement("h3"); h3.style.marginTop = "0"; h3.textContent = "📅 カレンダー登録";
+    const p1 = document.createElement("p"); p1.style.fontSize = "14px"; p1.style.color = "#555"; p1.textContent = "カレンダーファイルのダウンロードを開始しました。";
+    
+    const dlBtn = document.createElement("button");
+    dlBtn.style.cssText = "display:block; width:100%; padding:14px; background:#007aff; color:white; border:none; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;";
+    dlBtn.textContent = "⬇️ 再ダウンロード";
+    
+    const p2 = document.createElement("p"); p2.style.cssText = "font-size:13px; color:#e53e3e; font-weight:bold; margin-top:25px;"; p2.textContent = "【LINEアプリに戻る方法】";
+    const p3 = document.createElement("p"); p3.style.cssText = "font-size:13px; color:#333; margin-top:5px; line-height:1.4;";
+    p3.innerHTML = "画面の一番左上にある小さく青い<b>「🔍LINE」</b>という文字を押すか、スマホの履歴（タスク）画面からLINEアプリを選んでお戻りください。";
+    
+    box.appendChild(h3); box.appendChild(p1); box.appendChild(dlBtn); box.appendChild(p2); box.appendChild(p3);
+    container.appendChild(box); document.body.appendChild(container);
     
     function dl(){
       const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${title}\nDTSTART;VALUE=DATE:${cleanStart.substring(0,8)}\nDESCRIPTION:精算締め切り期日です。\nEND:VEVENT\nEND:VCALENDAR`;
       const blob = new Blob([ics], { type: "text/calendar;charset=utf-8;" });
-      const l = document.createElement("a");
-      l.href = URL.createObjectURL(blob); l.download = "event.ics";
+      const l = document.createElement("a"); l.href = URL.createObjectURL(blob); l.download = "event.ics";
       document.body.appendChild(l); l.click(); document.body.removeChild(l);
     }
-    dl();
-    document.getElementById("dlBtn").onclick = dl;
+    dl(); dlBtn.onclick = dl;
   }
 
   window.onload = function() {
     paramAction = getQueryParam('action'); paramTxId = getQueryParam('txId');
-    if (paramAction === 'downloadIcs') { processIcsDownload(); return; } // カレンダー警告回避ルート
+    if (paramAction === 'downloadIcs') { processIcsDownload(); return; }
 
     liff.init({ liffId: LIFF_ID }).then(() => {
       if (!liff.isLoggedIn()) { liff.login(); } else { routeScreen(); }
@@ -284,55 +283,101 @@
 
   function routeScreen() {
     liff.getProfile().then(prof => { 
-      currentUserName = prof.displayName;
+      currentUserId = prof.userId; currentUserName = prof.displayName;
       if (paramAction === 'join' && paramTxId) { loadMemberJoinPage(paramTxId); } else { loadMyPage(); }
     }).catch(() => {
+      currentUserId = "debug_user_id"; currentUserName = "デバッグユーザー";
       if (paramAction === 'join' && paramTxId) { loadMemberJoinPage(paramTxId); } else { loadMyPage(); }
     });
   }
 
+  // 🛡️ セキュリティ：すべてのPOST通信にIDトークンを自動添付＆連打防止
   function postToGas(actionName, paramsObj) {
     showLoading();
+    const buttons = document.querySelectorAll("button, input[type='radio']");
+    buttons.forEach(btn => btn.disabled = true); // 通信中は全UIをロック（連打防止）
+
     const formData = new URLSearchParams();
     formData.append("action", actionName);
+    formData.append("idToken", liff.getIDToken() || "debug_token"); // 本物のIDトークンを送信
+    formData.append("fallbackDisplayName", currentUserName);
+    
     for (const key in paramsObj) { formData.append(key, paramsObj[key]); }
+    
     return fetch(GAS_WEB_APP_URL, {
       method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: formData.toString()
-    }).then(res => res.json()).finally(() => hideLoading());
+    })
+    .then(res => res.json())
+    .then(json => {
+      if (json.status === "error") { alert("エラーが発生しました: " + json.message); throw new Error(json.message); }
+      return json;
+    })
+    .finally(() => {
+      hideLoading();
+      buttons.forEach(btn => btn.disabled = false);
+    });
   }
 
+  // 🛡️ XSS対策：innerHTMLを使わず100% DOM操作で描画
   function loadMyPage() {
-    document.getElementById("mypage_user_name").innerText = currentUserName;
-    postToGas("getMyEvents", { userName: currentUserName }).then(data => {
+    postToGas("getMyEvents", {}).then(data => {
       if (data.status === 'success') {
         const hList = document.getElementById("hosting_list");
         const jList = document.getElementById("joining_list");
         const select = document.getElementById("select_event");
         hList.innerHTML = ""; jList.innerHTML = "";
-        select.innerHTML = '<option value="">-- 既存イベントを選択 --</option>';
+        select.innerHTML = "";
+        
+        const defOpt = document.createElement("option"); defOpt.value = ""; defOpt.textContent = "-- 既存イベントを選択 --";
+        select.appendChild(defOpt);
 
-        if(data.hosting.length === 0) hList.innerHTML = '<div style="color:#888; padding:10px; font-size:13px;">主催しているイベントはありません。</div>';
-        else {
-          data.hosting.forEach(ev => {
-            const priceText = ev.balance >= 0 ? `もらえます<br><span class="price-bold" style="color:#06C755;">+${ev.balance.toLocaleString()}円</span>` : `支払います<br><span class="price-bold" style="color:#df382c;">${ev.balance.toLocaleString()}円</span>`;
-            const badge = ev.hasActive ? `<span style="background:#06C755; color:white; padding:2px 5px; border-radius:4px; font-size:10px; margin-left:6px;">回収中</span>` : `<span style="background:#888; color:white; padding:2px 5px; border-radius:4px; font-size:10px; margin-left:6px;">精算完了</span>`;
-            hList.innerHTML += `<div class="event-item-card" onclick="openDetailModal('${ev.txId}')"><div class="event-item-title">👑 ${ev.eventName}${badge}</div><div class="event-item-price">あなたが<br>${priceText}</div></div>`;
-            select.innerHTML += `<option value="${ev.txId}">${ev.eventName}</option>`;
+        const renderList = (targetEl, listData, isHost) => {
+          if (listData.length === 0) {
+            const noData = document.createElement("div"); noData.style.cssText = "color:#888; padding:10px; font-size:13px;";
+            noData.textContent = isHost ? "主催しているイベントはありません。" : "参加しているイベントはありません。";
+            targetEl.appendChild(noData);
+            return;
+          }
+          listData.forEach(ev => {
+            const card = document.createElement("div"); card.className = "event-item-card";
+            card.onclick = () => openDetailModal(ev.txId);
+            
+            const title = document.createElement("div"); title.className = "event-item-title";
+            title.textContent = (isHost ? "👑 " : "👥 ") + ev.eventName;
+            
+            const badge = document.createElement("span");
+            badge.style.cssText = "padding:2px 5px; border-radius:4px; font-size:10px; margin-left:6px; color:white;";
+            if (ev.hasActive) {
+              badge.style.background = isHost ? "#06C755" : "#4285F4";
+              badge.textContent = isHost ? "回収中" : "未精算あり";
+            } else {
+              badge.style.background = "#888"; badge.textContent = "精算完了";
+            }
+            title.appendChild(badge);
+            
+            const price = document.createElement("div"); price.className = "event-item-price";
+            const priceLabel = document.createElement("span"); priceLabel.textContent = "あなたが" + (ev.balance >= 0 ? "もらえます" : "支払います");
+            const priceAmt = document.createElement("span"); priceAmt.className = "price-bold";
+            priceAmt.style.display = "block"; priceAmt.style.color = ev.balance >= 0 ? "#06C755" : "#df382c";
+            priceAmt.textContent = (ev.balance >= 0 ? "+" : "") + ev.balance.toLocaleString() + "円";
+            
+            price.appendChild(priceLabel); price.appendChild(priceAmt);
+            card.appendChild(title); card.appendChild(price);
+            targetEl.appendChild(card);
+            
+            if (isHost) {
+              const opt = document.createElement("option"); opt.value = ev.txId; opt.textContent = ev.eventName;
+              select.appendChild(opt);
+            }
           });
-        }
+        };
 
-        if(data.joining.length === 0) jList.innerHTML = '<div style="color:#888; padding:10px; font-size:13px;">参加しているイベントはありません。</div>';
-        else {
-          data.joining.forEach(ev => {
-            const priceText = ev.balance >= 0 ? `もらえます<br><span class="price-bold" style="color:#06C755;">+${ev.balance.toLocaleString()}円</span>` : `支払います<br><span class="price-bold" style="color:#df382c;">${ev.balance.toLocaleString()}円</span>`;
-            const badge = ev.hasActive ? `<span style="background:#4285F4; color:white; padding:2px 5px; border-radius:4px; font-size:10px; margin-left:6px;">未精算あり</span>` : `<span style="background:#888; color:white; padding:2px 5px; border-radius:4px; font-size:10px; margin-left:6px;">精算完了</span>`;
-            jList.innerHTML += `<div class="event-item-card" onclick="openDetailModal('${ev.txId}')"><div class="event-item-title">👥 ${ev.eventName}${badge}</div><div class="event-item-price">あなたが<br>${priceText}</div></div>`;
-            select.innerHTML += `<option value="${ev.txId}">${ev.eventName}</option>`;
-          });
-        }
+        renderList(hList, data.hosting, true);
+        renderList(jList, data.joining, false);
+        document.getElementById("mypage_user_name").textContent = currentUserName;
         document.getElementById("mypage_screen").classList.remove("hidden");
       }
-    }).catch(err => alert("読み込み失敗: " + err));
+    });
   }
 
   function openDetailModal(txId) {
@@ -340,131 +385,97 @@
     postToGas("getEventDetails", { txId: txId }).then(res => {
       if(res.status === 'success') {
         const ev = res.event;
-        document.getElementById("md_event_name").innerText = ev.eventName;
-        document.getElementById("md_members_list").innerText = ev.members.join(", ");
+        document.getElementById("md_event_name").textContent = ev.eventName;
+        document.getElementById("md_members_list").textContent = ev.members.map(m => m.displayName).join(", ");
         
-        const expList = document.getElementById("md_expenses_list");
-        expList.innerHTML = "";
-        
-        let totalUnsettledForMe = 0;
-        let myPaidUnsettledForOthers = 0;
+        const calcDetail = document.getElementById("md_calc_detail"); calcDetail.innerHTML = "";
+        const labelSpan = document.createElement("span"); labelSpan.textContent = "➔ 差引結果: ";
+        const boldSpan = document.createElement("span"); boldSpan.style.cssText = "font-weight:bold; font-size:15px;";
+        boldSpan.style.color = ev.myBalance >= 0 ? "#06C755" : "#df382c";
+        boldSpan.textContent = (ev.myBalance >= 0 ? "" : "-") + Math.abs(ev.myBalance).toLocaleString() + "円 " + (ev.myBalance >= 0 ? "もらえます" : "支払います");
+        calcDetail.appendChild(labelSpan); calcDetail.appendChild(boldSpan);
+
+        const expList = document.getElementById("md_expenses_list"); expList.innerHTML = "";
         const count = ev.members.length;
 
+        if (count === 1 && ev.members[0].userId === currentUserId) {
+          const alertBox = document.createElement("div");
+          alertBox.style.cssText = "color:#dd6b20; font-size:12px; padding:10px; background:#fffaf0; border:1px solid #feebc8; border-radius:6px; margin-bottom:10px; line-height:1.4;";
+          alertBox.textContent = "⚠️ まだ他のメンバーがグループに参加していません。トーク画面に配信された招待リンク(⭕ 参加する)をタップしてもらい、グループへの参加を確定させてください。";
+          expList.appendChild(alertBox);
+        }
+
         ev.expenses.forEach(x => {
-          const perPerson = Math.round(x.amount / count);
+          const perPerson = Math.floor(x.amount / count);
+          const card = document.createElement("div"); card.className = "exp-accordion-card";
+          if (x.isAllSettled) card.style.cssText = "opacity: 0.6; background: #edf2f7;";
+
+          const header = document.createElement("div"); header.className = "exp-header";
+          header.onclick = () => toggleAccordion(header);
           
-          // 【バグ修正】自分以外の参加メンバーが1人以上入っていて、かつ全員が受領チェックされているときだけ「全受領済」とする
-          const otherMembers = ev.members.filter(m => m !== x.payer);
-          const isAllSettled = otherMembers.length > 0 && otherMembers.every(m => x.settledUsers.includes(m));
+          const left = document.createElement("div");
+          const b = document.createElement("b"); b.style.fontSize = "14px"; b.textContent = x.name;
+          const spanPayer = document.createElement("span"); spanPayer.style.cssText = "font-size:11px; color:#666;"; spanPayer.textContent = ` (${x.payerName})`;
+          const dlText = document.createElement("div"); dlText.className = "exp-deadline-text";
+          dlText.textContent = `期日: ${x.deadline ? x.deadline.split("T")[0] : "-"} `;
+          const bSpan = document.createElement("span"); bSpan.style.color = x.isAllSettled ? "#718096" : "#dd6b20"; bSpan.textContent = x.isAllSettled ? "[全受領確認済]" : "[未精算あり]";
+          dlText.appendChild(bSpan);
+          left.appendChild(b); left.appendChild(spanPayer); left.appendChild(dlText);
+
+          const right = document.createElement("div"); right.style.textAlign = "right";
+          const amtSpan = document.createElement("span"); amtSpan.style.cssText = "font-weight:bold; font-size:14px; color:#111;"; amtSpan.textContent = x.amount.toLocaleString() + "円 ▽";
+          right.appendChild(amtSpan);
+          header.appendChild(left); header.appendChild(right);
+
+          const body = document.createElement("div"); body.className = "exp-body";
           
-          let memberCheckRowsHtml = "";
-          ev.members.forEach(m => {
-            if (m === x.payer) {
-              memberCheckRowsHtml += `<div class="member-check-row" style="color:#718096;"><span>👤 ${m}</span><span>(支払者本人)</span></div>`;
+          x.members.forEach(m => {
+            const row = document.createElement("div"); row.className = "member-check-row";
+            const nameS = document.createElement("span");
+            if (m.userId === x.payerId) {
+              nameS.style.color = "#718096"; nameS.textContent = `👤 ${m.displayName} (支払者本人)`; row.appendChild(nameS);
             } else {
-              const isChecked = x.settledUsers.includes(m);
-              const disabledAttr = (x.payer === currentUserName) ? "" : "disabled";
-              memberCheckRowsHtml += `
-                <div class="member-check-row">
-                  <span>👤 ${m} (${perPerson.toLocaleString()}円)</span>
-                  <input type="checkbox" style="transform:scale(1.2);" ${isChecked ? "checked" : ""} ${disabledAttr} onchange="toggleUserCheck('${x.id}', '${m}', this.checked)">
-                </div>`;
+              nameS.textContent = `👤 ${m.displayName} (${perPerson.toLocaleString()}円)`; row.appendChild(nameS);
+              const chk = document.createElement("input"); chk.type = "checkbox"; chk.style.transform = "scale(1.2)";
+              chk.checked = (m.status === "settled");
+              if (x.payerId !== currentUserId) chk.disabled = true; // 立替人本人以外は受領チェックの操作を禁止（A級対策）
+              chk.onchange = (e) => toggleUserCheck(x.id, m.userId, e.target.checked);
+              row.appendChild(chk);
             }
+            body.appendChild(row);
           });
 
-          let editButtonsHtml = "";
-          if (x.payer === currentUserName) {
-            editButtonsHtml = `
-              <div style="margin-top:10px; text-align:right; gap:8px; display:flex; justify-content:flex-end;">
-                <button style="background:#4a5568; color:white; border:none; padding:5px 10px; font-size:11px; border-radius:4px;" onclick="openEditModal('${x.id}','${x.name}',${x.amount},'${x.deadline}')">✏️ 項目を編集</button>
-                <button style="background:#e53e3e; color:white; border:none; padding:5px 10px; font-size:11px; border-radius:4px;" onclick="deleteItem('${x.id}')">削除</button>
-              </div>`;
+          if (x.payerId === currentUserId) {
+            const btnBox = document.createElement("div"); btnBox.style.cssText = "margin-top:10px; text-align:right; gap:8px; display:flex; justify-content:flex-end;";
+            const editB = document.createElement("button"); editB.style.cssText = "background:#4a5568; color:white; border:none; padding:5px 10px; font-size:11px; border-radius:4px; cursor:pointer;"; editB.textContent = "✏️ 項目を編集";
+            editB.onclick = () => openEditModal(x.id, x.name, x.amount, x.deadline);
+            const delB = document.createElement("button"); delB.style.cssText = "background:#e53e3e; color:white; border:none; padding:5px 10px; font-size:11px; border-radius:4px; cursor:pointer;"; delB.textContent = "削除";
+            delB.onclick = () => deleteItem(x.id);
+            btnBox.appendChild(editB); btnBox.appendChild(delB); body.appendChild(btnBox);
           }
 
-          const cardStyle = isAllSettled ? "opacity: 0.6; background: #edf2f7;" : "";
-          const badgeText = isAllSettled ? "<span style='color:#718096;'>[全受領確認済]</span>" : "<span style='color:#dd6b20;'>[未精算あり]</span>";
-
-          expList.innerHTML += `
-            <div class="exp-accordion-card" style="${cardStyle}">
-              <div class="exp-header" onclick="toggleAccordion(this)">
-                <div>
-                  <b style="font-size:14px;">${x.name}</b> <span style="font-size:11px; color:#666;">(${x.payer})</span>
-                  <div class="exp-deadline-text">期日: ${x.deadline ? x.deadline.split("T")[0] : "-"} ${badgeText}</div>
-                </div>
-                <div style="text-align:right;">
-                  <span style="font-weight:bold; font-size:14px; color:#111;">${x.amount.toLocaleString()}円</span> ▽
-                </div>
-              </div>
-              <div class="exp-body">
-                ${memberCheckRowsHtml}
-                ${editButtonsHtml}
-              </div>
-            </div>`;
-
-          if (!isAllSettled) {
-            if (x.payer === currentUserName) {
-              ev.members.forEach(m => {
-                if (m !== currentUserName && !x.settledUsers.includes(m)) {
-                  myPaidUnsettledForOthers += perPerson;
-                }
-              });
-            } else {
-              if (ev.members.includes(currentUserName) && !x.settledUsers.includes(currentUserName)) {
-                totalUnsettledForMe += perPerson;
-              }
-            }
-          }
+          card.appendChild(header); card.appendChild(body); expList.appendChild(card);
         });
 
-        // 初期状態で参加者が主催者1人のみの場合のアナウンスを表示
-        if (ev.members.length === 1 && ev.members[0] === currentUserName) {
-          expList.innerHTML = `<div style="color:#dd6b20; font-size:12px; padding:10px; background:#fffaf0; border:1px solid #feebc8; border-radius:6px; margin-bottom:10px; line-height:1.4;">⚠️ まだ他のメンバーがグループに参加していません。<br>新規作成時にLINE配信された招待リンク(⭕ 参加する)を、他のメンバーにタップしてもらい、グループへの参加を確定させてください。</div>` + expList.innerHTML;
-        }
-
-        if(expList.innerHTML === "") expList.innerHTML = '<div style="color:#888; font-size:12px; padding:10px;">登録項目はありません。</div>';
-
-        const bal = myPaidUnsettledForOthers - totalUnsettledForMe;
-        let calcHtml = "";
-        if(bal >= 0) {
-          calcHtml += `➔ 差引結果: <b style="color:#06C755; font-size:15px;">${bal.toLocaleString()}円 もらえます</b>`;
-        } else {
-          calcHtml += `➔ 差引結果: <b style="color:#df382c; font-size:15px;">${Math.abs(bal).toLocaleString()}円 支払います</b>`;
-        }
-        document.getElementById("md_calc_detail").innerHTML = calcHtml;
         document.getElementById("detail_modal").classList.remove("hidden");
       }
     });
   }
 
-  function toggleAccordion(headerEl) {
-    const body = headerEl.nextElementSibling;
-    body.style.display = (body.style.display === "block") ? "none" : "block";
-  }
-
-  function toggleUserCheck(expId, targetUser, isChecked) {
-    postToGas("updateUserCheck", { expId: expId, targetUser: targetUser, isChecked: isChecked }).then(() => {
-      openDetailModal(selectedTxIdForModal);
-    });
-  }
-
+  function toggleAccordion(headerEl) { const b = headerEl.nextElementSibling; b.style.display = (b.style.display === "block") ? "none" : "block"; }
+  function toggleUserCheck(expId, targetUserId, isChecked) { postToGas("updateUserCheck", { expId: expId, targetUserId: targetUserId, isChecked: isChecked }).then(() => openDetailModal(selectedTxIdForModal)); }
   function closeDetailModal() { document.getElementById("detail_modal").classList.add("hidden"); loadMyPage(); }
 
   function openEditModal(id, name, amount, deadline) {
-    document.getElementById("qa_title").innerText = "✏️ 立替項目の編集";
-    document.getElementById("qa_mode").value = "edit";
-    document.getElementById("qa_exp_id").value = id;
-    document.getElementById("qa_name").value = name;
-    document.getElementById("qa_amount").value = amount;
+    document.getElementById("qa_title").textContent = "✏️ 立替項目の編集"; document.getElementById("qa_mode").value = "edit"; document.getElementById("qa_exp_id").value = id;
+    document.getElementById("qa_name").value = name; document.getElementById("qa_amount").value = amount;
     document.getElementById("qa_deadline").value = deadline ? deadline.split("T")[0] : "";
     document.getElementById("quick_add_modal").classList.remove("hidden");
   }
 
   function openQuickAddModal() {
-    document.getElementById("qa_title").innerText = "➕ 新たな立替の追加";
-    document.getElementById("qa_mode").value = "add";
-    document.getElementById("qa_name").value = "";
-    document.getElementById("qa_amount").value = "";
-    document.getElementById("qa_deadline").value = "";
+    document.getElementById("qa_title").textContent = "➕ 新たな立替の追加"; document.getElementById("qa_mode").value = "add";
+    document.getElementById("qa_name").value = ""; document.getElementById("qa_amount").value = ""; document.getElementById("qa_deadline").value = "";
     document.getElementById("quick_add_modal").classList.remove("hidden");
   }
   function closeQuickAddModal() { document.getElementById("quick_add_modal").classList.add("hidden"); }
@@ -472,30 +483,22 @@
   function deleteItem(id) {
     if(!confirm("この立替項目を完全に削除しますか？")) return;
     document.getElementById("quick_add_modal").classList.add("hidden");
-    postToGas("deleteExpenseItem", { expId: id }).then(() => {
-      openDetailModal(selectedTxIdForModal);
-    });
+    postToGas("deleteExpenseItem", { expId: id }).then(() => openDetailModal(selectedTxIdForModal));
   }
 
   function submitQuickModal() {
-    const mode = document.getElementById("qa_mode").value;
-    const name = document.getElementById("qa_name").value.trim();
-    const amt = document.getElementById("qa_amount").value;
-    const dead = document.getElementById("qa_deadline").value;
+    const mode = document.getElementById("qa_mode").value; const name = document.getElementById("qa_name").value.trim();
+    const amt = document.getElementById("qa_amount").value; const dead = document.getElementById("qa_deadline").value;
     if(!name || !amt || !dead) { alert("全て入力してください。"); return; }
-
     closeQuickAddModal();
-    const evName = document.getElementById("md_event_name").innerText;
+    const evName = document.getElementById("md_event_name").textContent;
 
     if (mode === "edit") {
       const expId = document.getElementById("qa_exp_id").value;
-      postToGas("editExpenseItem", { expId: expId, expenseName: name, amount: amt, deadline: dead }).then(() => {
-        openDetailModal(selectedTxIdForModal);
-      });
+      postToGas("editExpenseItem", { expId: expId, expenseName: name, amount: amt, deadline: dead }).then(() => openDetailModal(selectedTxIdForModal));
     } else {
-      postToGas("addExpense", { txId: selectedTxIdForModal, expenseName: name, amount: amt, deadline: dead, creator: currentUserName }).then(() => {
-        closeDetailModal();
-        sendLineFlexNotification(evName, name, amt, dead, "add");
+      postToGas("addExpense", { txId: selectedTxIdForModal, expenseName: name, amount: amt, deadline: dead }).then(() => {
+        closeDetailModal(); sendLineFlexNotification(evName, name, amt, dead, "add");
       });
     }
   }
@@ -512,18 +515,13 @@
     if (mode === "新規") {
       const eventName = document.getElementById("event_name").value.trim();
       if (!eventName) { alert("イベント名を入力してください。"); document.getElementById("app").classList.remove("hidden"); return; }
-      const generatedTxId = "TX" + Date.now();
-
-      postToGas("createNewEvent", { txId: generatedTxId, eventName: eventName, expenseName: expName, amount: amount, deadline: deadlineRaw, creator: currentUserName }).then(() => {
-        sendLineFlexNotification(eventName, expName, amount, deadlineRaw, "new", generatedTxId);
+      postToGas("createNewEvent", { eventName: eventName, expenseName: expName, amount: amount, deadline: deadlineRaw }).then((res) => {
+        sendLineFlexNotification(eventName, expName, amount, deadlineRaw, "new", res.txId);
       });
     } else {
-      const selectEl = document.getElementById("select_event");
-      const targetTxId = selectEl.value;
-      const eventName = selectEl.options[selectEl.selectedIndex].text;
+      const selectEl = document.getElementById("select_event"); const targetTxId = selectEl.value; const eventName = selectEl.options[selectEl.selectedIndex].text;
       if (!targetTxId) { alert("イベントを選択してください。"); document.getElementById("app").classList.remove("hidden"); return; }
-
-      postToGas("addExpense", { txId: targetTxId, expenseName: expName, amount: amount, deadline: deadlineRaw, creator: currentUserName }).then(() => {
+      postToGas("addExpense", { txId: targetTxId, expenseName: expName, amount: amount, deadline: deadlineRaw }).then(() => {
         sendLineFlexNotification(eventName, expName, amount, deadlineRaw, "add");
       });
     }
@@ -562,31 +560,30 @@
         },
         footer: {
           type: "box", layout: "horizontal",
-          contents: [{ type: "button", style: "primary", color: "#007aff", action: { type: "uri", label: "👀 新たな立替を確認する", uri: `https://liff.line.me/${LIFF_ID}` } }]
+          contents: [{ type: "button", style: "primary", color: "#007aff", action: { type: "uri", label: "👀 立替を確認する", uri: `https://liff.line.me/${LIFF_ID}` } }]
         }
       };
     }
 
-    // ピッカー起動。非同期処理の待機を改善
     if (liff.isApiAvailable('shareTargetPicker')) {
       liff.shareTargetPicker([{ type: "flex", altText: `【割り勘精算】${eventName}`, contents: flexContents }])
-      .then((res) => {
-        document.getElementById("success_desc").innerText = "LINEメンバーにメッセージを送信しました。";
+      .then(() => {
+        document.getElementById("success_desc").textContent = "LINEメンバーにメッセージを送信しました。";
         showSuccessPage(eventName, expName, amount, deadline);
       })
       .catch(() => {
-        document.getElementById("success_desc").innerText = "登録は完了しました。(LINE設定等によりメッセージ送信はスキップされました)";
+        document.getElementById("success_desc").textContent = "登録完了(ターゲットピッカーがキャンセルされました)";
         showSuccessPage(eventName, expName, amount, deadline);
       });
     } else {
-      document.getElementById("success_desc").innerText = "登録が完了しました。";
+      document.getElementById("success_desc").textContent = "登録が完了しました。";
       showSuccessPage(eventName, expName, amount, deadline);
     }
   }
 
   function showSuccessPage(name, expName, amt, dead) {
-    document.getElementById("res_event").innerText = name;
-    document.getElementById("res_amount").innerText = `${expName} / ${Number(amt).toLocaleString()}円`;
+    document.getElementById("res_event").textContent = name;
+    document.getElementById("res_amount").textContent = `${expName} / ${Number(amt).toLocaleString()}円`;
     gEventData = { title: `【精算期日】${name}(${expName})`, startRaw: dead };
     document.getElementById("modal_gcal").href = generateGoogleCalendarUrl(gEventData.title, dead);
     document.getElementById("success_page").classList.remove("hidden");
@@ -596,40 +593,35 @@
     postToGas("getEventDetails", { txId: txId }).then(res => {
       if (res.status === 'success') {
         const ev = res.event;
-        document.getElementById("join_creator").innerText = ev.creator;
-        document.getElementById("join_event_name").innerText = ev.eventName;
+        document.getElementById("join_creator").textContent = ev.creatorName;
+        document.getElementById("join_event_name").textContent = ev.eventName;
         document.getElementById("member_join_page").classList.remove("hidden");
-      } else { alert("エラー: " + res.message); loadMyPage(); }
+      } else { loadMyPage(); }
     }).catch(() => loadMyPage());
   }
 
   function processMemberResponse(type) {
     if (type === 'decline') { liff.closeWindow(); return; }
     document.getElementById("member_join_page").classList.add("hidden");
-    postToGas("joinEvent", { txId: paramTxId, userName: currentUserName }).then(() => {
+    postToGas("joinEvent", { txId: paramTxId }).then(() => {
       document.getElementById("member_success_page").classList.remove("hidden");
     });
   }
 
   function backToMyPageFromDone() {
-    document.getElementById("success_page").classList.add("hidden");
-    document.getElementById("member_success_page").classList.add("hidden");
+    document.getElementById("success_page").classList.add("hidden"); document.getElementById("member_success_page").classList.add("hidden");
     const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-    window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
-    loadMyPage();
+    window.history.replaceState({ path: cleanUrl }, '', cleanUrl); loadMyPage();
   }
 
-  // 【バグ回避】GASを完全に外してGitHub側からダイレクトにICSファイルを生成してダウンロードさせる
   function openIphoneCalendar() {
     const currentHtmlUrl = window.location.href.split('?')[0];
     const url = `${currentHtmlUrl}?action=downloadIcs&title=${encodeURIComponent(gEventData.title)}&date=${encodeURIComponent(gEventData.startRaw)}`;
-    liff.openWindow({ url: url, external: true });
-    closeCalendarModal();
+    liff.openWindow({ url: url, external: true }); closeCalendarModal();
   }
 
   function generateGoogleCalendarUrl(title, startRaw) {
-    if(!startRaw) return "#";
-    const cleanStart = startRaw.replace(/[^0-9]/g, '');
+    if(!startRaw) return "#"; const cleanStart = startRaw.replace(/[^0-9]/g, '');
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${cleanStart}/${cleanStart}&details=アプリから確認してください。`;
   }
 
